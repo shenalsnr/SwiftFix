@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import CreateBooking from './components/CreateBooking';
 import MyBookings from './components/MyBookings';
 import AdminDashboard from './components/AdminDashboard';
-import { CalendarPlus, UserCheck, ShieldCheck, GraduationCap } from 'lucide-react';
+import FacilitiesCatalogue from './components/FacilitiesCatalogue';
+import { CalendarPlus, UserCheck, ShieldCheck, GraduationCap, Building2 } from 'lucide-react';
 
 const App = () => {
     return (
@@ -26,6 +27,9 @@ const App = () => {
                                 <Link to="/my-bookings" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all">
                                     <UserCheck size={18} /> My Bookings
                                 </Link>
+                                <Link to="/catalogue" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all">
+                                    <Building2 size={18} /> Catalogue
+                                </Link>
                                 <Link to="/admin" className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-gray-900 bg-gray-100 hover:bg-gray-200 transition-all ml-4 border border-gray-200 shadow-sm">
                                     <ShieldCheck size={18} className="text-indigo-600" /> Admin
                                 </Link>
@@ -39,6 +43,7 @@ const App = () => {
                     <Routes>
                         <Route path="/" element={<CreateBooking />} />
                         <Route path="/my-bookings" element={<MyBookings />} />
+                        <Route path="/catalogue" element={<FacilitiesCatalogue />} />
                         <Route path="/admin" element={<AdminDashboard />} />
                     </Routes>
                 </main>
