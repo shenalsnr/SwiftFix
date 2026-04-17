@@ -12,6 +12,11 @@ export const getResources = async (filters = {}) => {
     return response.data;
 };
 
+export const getResourceStats = async () => {
+    const response = await axios.get(`${API_URL}/stats`);
+    return response.data;
+};
+
 export const createResource = async (resource) => {
     const response = await axios.post(API_URL, resource);
     return response.data;

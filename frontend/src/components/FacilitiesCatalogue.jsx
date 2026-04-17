@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { getResources, createResource, updateResource, deleteResource } from '../services/resourceService';
 import { Search, Plus, Edit2, Trash2, X } from 'lucide-react';
+import ResourceDashboard from './ResourceDashboard';
 
 const FacilitiesCatalogue = () => {
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [resources, setResources] = useState([]);
     const [filters, setFilters] = useState({ type: '', capacity: '', location: '' });
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,6 +57,7 @@ const FacilitiesCatalogue = () => {
                 await createResource(currentResource);
             }
             fetchResources();
+            setRefreshTrigger(prev => prev + 1);
             closeModal();
         } catch (error) {
             console.error('Error saving resource:', error);
@@ -66,6 +69,7 @@ const FacilitiesCatalogue = () => {
             try {
                 await deleteResource(id);
                 fetchResources();
+                setRefreshTrigger(prev => prev + 1);
             } catch (error) {
                 console.error('Error deleting resource:', error);
             }
@@ -73,8 +77,10 @@ const FacilitiesCatalogue = () => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="flex justify-between items-center mb-6">
+        <div className="space-y-6">
+            <ResourceDashboard refreshTrigger={refreshTrigger} />
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex justify-between items-center mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Facilities & Assets Catalogue</h2>
                     <p className="text-sm text-gray-500">Manage campus resources seamlessly.</p>
@@ -91,14 +97,18 @@ const FacilitiesCatalogue = () => {
             <div className="flex flex-wrap gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
                 <div className="flex items-center w-full md:w-auto bg-white border border-gray-200 rounded-lg px-3 flex-1 focus-within:ring-2 focus-within:ring-blue-100">
                     <Search className="text-gray-400 mr-2" size={18} />
-                    <input
-                        type="text"
+                    <select
                         name="type"
-                        placeholder="Filter by type (e.g. LAB)"
                         value={filters.type}
                         onChange={handleFilterChange}
-                        className="w-full py-2 outline-none text-sm"
-                    />
+                        className="w-full py-2 outline-none text-sm bg-transparent cursor-pointer text-gray-600"
+                    >
+                        <option value="">Filter by type (All)</option>
+                        <option value="LECTURE_HALL">LECTURE_HALL</option>
+                        <option value="LAB">LAB</option>
+                        <option value="MEETING_ROOM">MEETING_ROOM</option>
+                        <option value="EQUIPMENT">EQUIPMENT</option>
+                    </select>
                 </div>
                 <div className="flex items-center w-full md:w-auto bg-white border border-gray-200 rounded-lg px-3 flex-1 focus-within:ring-2 focus-within:ring-blue-100">
                     <input
@@ -191,7 +201,13 @@ const FacilitiesCatalogue = () => {
                             <div className="flex gap-4">
                                 <div className="flex-1">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Type <span className="text-red-500">*</span></label>
-                                    <input required type="text" name="type" value={currentResource.type} onChange={handleInputChange} className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., LECTURE_HALL" />
+                                    <select required name="type" value={currentResource.type} onChange={handleInputChange} className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white cursor-pointer">
+                                        <option value="" disabled>Select a type</option>
+                                        <option value="LECTURE_HALL">LECTURE_HALL</option>
+                                        <option value="LAB">LAB</option>
+                                        <option value="MEETING_ROOM">MEETING_ROOM</option>
+                                        <option value="EQUIPMENT">EQUIPMENT</option>
+                                    </select>
                                 </div>
                                 <div className="flex-1">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Capacity</label>
@@ -229,6 +245,7 @@ const FacilitiesCatalogue = () => {
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 };

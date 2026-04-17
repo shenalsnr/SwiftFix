@@ -3,9 +3,12 @@ package SwiftFix.backend.service;
 import SwiftFix.backend.exception.ResourceNotFoundException;
 import SwiftFix.backend.model.Resource;
 import SwiftFix.backend.repository.ResourceRepository;
+import SwiftFix.backend.model.ResourceStats;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ResourceService {
@@ -14,6 +17,18 @@ public class ResourceService {
 
     public ResourceService(ResourceRepository resourceRepository) {
         this.resourceRepository = resourceRepository;
+    }
+
+    public ResourceStats getResourceStats() {
+        List<Resource> resources = resourceRepository.findAll();
+        
+        long totalCount = resources.size();
+        long activeCount = resources.stream().filter(r -> "ACTIVE".equals(r.getStatus())).count();
+        long maintenanceCount = resources.stream().filter(r -> "OUT_OF_SERVICE".equals(r.getStatus())).count();
+        Map<String, Long> typeBreakdown = resources.stream()
+                .collect(Collectors.groupingBy(Resource::getType, Collectors.counting()));
+                
+        return new ResourceStats(totalCount, activeCount, maintenanceCount, typeBreakdown);
     }
 
     public Resource createResource(Resource resource) {

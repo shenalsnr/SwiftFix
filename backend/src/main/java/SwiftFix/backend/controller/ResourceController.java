@@ -1,6 +1,7 @@
 package SwiftFix.backend.controller;
 
 import SwiftFix.backend.model.Resource;
+import SwiftFix.backend.model.ResourceStats;
 import SwiftFix.backend.service.ResourceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,12 @@ public class ResourceController {
 
     public ResourceController(ResourceService resourceService) {
         this.resourceService = resourceService;
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<ResourceStats> getResourceStats() {
+        ResourceStats stats = resourceService.getResourceStats();
+        return ResponseEntity.ok(stats);
     }
 
     @PostMapping
