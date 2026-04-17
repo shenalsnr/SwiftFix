@@ -1,121 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import CreateBooking from './components/CreateBooking';
+import MyBookings from './components/MyBookings';
+import AdminDashboard from './components/AdminDashboard';
+import { CalendarPlus, UserCheck, ShieldCheck, GraduationCap } from 'lucide-react';
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+    return (
+        <Router>
+            <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
+                {/* Navigation Bar */}
+                <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between h-16 items-center">
+                            <div className="flex items-center gap-2">
+                                <div className="bg-blue-600 p-2 rounded-lg">
+                                    <GraduationCap className="text-white" size={24} />
+                                </div>
+                                <span className="text-2xl font-black tracking-tighter text-gray-800">Swift<span className="text-blue-600">Fix</span></span>
+                            </div>
+                            <div className="flex space-x-2">
+                                <Link to="/" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all">
+                                    <CalendarPlus size={18} /> Book
+                                </Link>
+                                <Link to="/my-bookings" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all">
+                                    <UserCheck size={18} /> My Bookings
+                                </Link>
+                                <Link to="/admin" className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-gray-900 bg-gray-100 hover:bg-gray-200 transition-all ml-4 border border-gray-200 shadow-sm">
+                                    <ShieldCheck size={18} className="text-indigo-600" /> Admin
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+                {/* Main Content Area */}
+                <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+                    <Routes>
+                        <Route path="/" element={<CreateBooking />} />
+                        <Route path="/my-bookings" element={<MyBookings />} />
+                        <Route path="/admin" element={<AdminDashboard />} />
+                    </Routes>
+                </main>
 
-      <div className="ticks"></div>
+                {/* Footer */}
+                <footer className="mt-auto py-8 text-center text-gray-400 text-xs border-t border-gray-100 bg-white">
+                    <p className="mb-1">SwiftFix &bull; Smart Campus Operations Hub</p>
+                    <p>&copy; 2026 SwiftFix. All rights reserved.</p>
+                </footer>
+            </div>
+        </Router>
+    );
+};
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
-
-export default App
+export default App;
