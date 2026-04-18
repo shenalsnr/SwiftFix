@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { bookingService } from '../services/api';
 import { Calendar, Clock, Users, FileText, Send } from 'lucide-react';
 
 const CreateBooking = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const resource = location.state?.selectedResource;
 
     const [formData, setFormData] = useState({
@@ -15,8 +16,59 @@ const CreateBooking = () => {
         purpose: '',
         attendees: 1,
     });
+    const [existingBookings, setExistingBookings] = useState([]);
+    const [conflictError, setConflictError] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+
+    useEffect(() => {
+        const fetchBookings = async () => {
+            try {
+                const response = await bookingService.getAllBookings();
+                const relevant = response.data.filter(b => 
+                    b.resourceId === formData.resourceId && 
+                    (b.status === 'PENDING' || b.status === 'APPROVED')
+                );
+                setExistingBookings(relevant);
+            } catch (error) {
+                console.error("Error fetching existing bookings", error);
+            }
+        };
+        if (formData.resourceId) {
+            fetchBookings();
+        }
+    }, [formData.resourceId]);
+
+    useEffect(() => {
+        if (!formData.date || !formData.startTime || !formData.endTime) {
+            setConflictError('');
+            return;
+        }
+
+        const selectedStart = new Date(`${formData.date}T${formData.startTime}`);
+        const selectedEnd = new Date(`${formData.date}T${formData.endTime}`);
+
+        if (selectedStart >= selectedEnd) {
+             setConflictError('Start time must be before end time.');
+             return;
+        }
+
+        const hasConflict = existingBookings.some(b => {
+             if (b.date !== formData.date) return false;
+             
+             const fixTime = (t) => t.length === 5 ? `${t}:00` : t;
+             const bStart = new Date(`${b.date}T${fixTime(b.startTime)}`);
+             const bEnd = new Date(`${b.date}T${fixTime(b.endTime)}`);
+
+             return selectedStart < bEnd && selectedEnd > bStart;
+        });
+
+        if (hasConflict) {
+            setConflictError('This resource is already booked or pending for this time. Please select a different time.');
+        } else {
+            setConflictError('');
+        }
+    }, [formData.date, formData.startTime, formData.endTime, existingBookings]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,19 +84,15 @@ const CreateBooking = () => {
                 ...formData,
                 userId: 'user123', // Hardcoded for demo
             });
-            setMessage({ type: 'success', text: 'Booking request submitted successfully!' });
-            setFormData({
-                resourceId: '',
-                date: '',
-                startTime: '',
-                endTime: '',
-                purpose: '',
-                attendees: 1,
-            });
+            alert('Booking Requested Successfully');
+            navigate('/my-bookings');
         } catch (error) {
+            console.error("Submission Error:", error.response?.data || error.message);
+            const errorMsg = error.response?.data?.message || error.message || 'Error creating booking. Please check for time conflicts.';
+            alert("Submission Error: " + errorMsg);
             setMessage({ 
                 type: 'error', 
-                text: error.response?.data?.message || 'Error creating booking. Please check for time conflicts.' 
+                text: errorMsg 
             });
         } finally {
             setLoading(false);
@@ -69,8 +117,14 @@ const CreateBooking = () => {
                 </div>
             )}
 
+            {conflictError && (
+                <div className="p-4 mb-6 rounded-lg bg-red-50 text-red-700 border border-red-200 shadow-sm font-medium">
+                    {conflictError}
+                </div>
+            )}
+
             {message.text && (
-                <div className={`p-4 mb-6 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                <div className={`p-4 mb-6 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'} border`}>
                     {message.text}
                 </div>
             )}
@@ -167,8 +221,8 @@ const CreateBooking = () => {
 
                 <button
                     type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg disabled:bg-gray-400"
+                    disabled={loading || !!conflictError}
+                    className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                     {loading ? 'Submitting...' : <><Send size={20} /> Submit Booking Request</>}
                 </button>

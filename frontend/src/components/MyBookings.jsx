@@ -2,21 +2,34 @@ import React, { useEffect, useState } from 'react';
 import { bookingService } from '../services/api';
 import { Clock, Calendar, XCircle, CheckCircle, AlertCircle } from 'lucide-react';
 
+import { getResources } from '../services/resourceService';
+
 const MyBookings = () => {
     const [bookings, setBookings] = useState([]);
+    const [resources, setResources] = useState([]);
     const [loading, setLoading] = useState(true);
     const userId = 'user123'; // Hardcoded for demo
 
     useEffect(() => {
         fetchBookings();
+        fetchResources();
     }, []);
+
+    const fetchResources = async () => {
+        try {
+            const data = await getResources();
+            setResources(data);
+        } catch (error) {
+            console.error("Error fetching resources:", error);
+        }
+    };
 
     const fetchBookings = async () => {
         try {
             const response = await bookingService.getUserBookings(userId);
             setBookings(response.data);
         } catch (error) {
-            console.error('Error fetching bookings:', error);
+            console.error("Fetch Error:", error.response?.data || error.message);
         } finally {
             setLoading(false);
         }
@@ -57,14 +70,23 @@ const MyBookings = () => {
                 </div>
             ) : (
                 <div className="grid gap-6">
-                    {bookings.map((booking) => (
+                    {bookings.map((booking) => {
+                        const resource = resources.find(r => String(r.id) === String(booking.resourceId));
+                        return (
                         <div key={booking.id} className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 transition-all hover:shadow-lg">
                             <div className="flex justify-between items-start">
                                 <div>
                                     <div className="flex items-center gap-3 mb-2">
-                                        <span className="text-xl font-bold text-gray-800">{booking.resourceId}</span>
+                                        <span className="text-xl font-bold text-gray-800">{resource ? resource.name : 'Unknown Resource'}</span>
+                                        {resource ? (
+                                            <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold border border-blue-100">
+                                                {resource.type}
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-400 text-[10px]">Loading...</span>
+                                        )}
                                         <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusStyle(booking.status)}`}>
-                                            {booking.status}
+                                            {booking.status === 'APPROVED' ? 'CONFIRMED' : booking.status}
                                         </span>
                                     </div>
                                     <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm text-gray-600">
@@ -95,7 +117,8 @@ const MyBookings = () => {
                                 )}
                             </div>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>
