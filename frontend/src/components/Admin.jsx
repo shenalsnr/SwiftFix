@@ -7,7 +7,7 @@ import {
     ChevronRight,
     ShieldCheck,
 } from 'lucide-react';
-import AdminDashboard from './AdminDashboard';
+import AdminDashboard from './Adminbooking';
 
 const NAV_ITEMS = [
     {

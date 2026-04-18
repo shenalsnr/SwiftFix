@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { bookingService } from '../services/api';
 import { LayoutDashboard, CheckCircle, XCircle, Users, Calendar, Clock, MessageSquareText } from 'lucide-react';
-
-const AdminDashboard = () => {
+Adminbooking = () => {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [rejectingId, setRejectingId] = useState(null);
@@ -163,4 +162,4 @@ const AdminDashboard = () => {
     );
 };
 
-export default AdminDashboard;
+export default Adminbooking;
