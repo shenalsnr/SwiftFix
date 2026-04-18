@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { bookingService } from '../services/api';
 import { Calendar, Clock, Users, FileText, Send } from 'lucide-react';
 
 const CreateBooking = () => {
+    const location = useLocation();
+    const resource = location.state?.selectedResource;
+
     const [formData, setFormData] = useState({
-        resourceId: '',
+        resourceId: resource?.id || '',
         date: '',
         startTime: '',
         endTime: '',
@@ -54,6 +58,17 @@ const CreateBooking = () => {
                 Book a Resource
             </h2>
 
+            {resource && (
+                <div className="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+                    <h3 className="font-semibold text-blue-800 mb-2">Resource Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-blue-700">
+                        <div><span className="font-medium">Name:</span> {resource.name}</div>
+                        <div><span className="font-medium">Location:</span> {resource.location || 'N/A'}</div>
+                        <div><span className="font-medium">Capacity:</span> {resource.capacity || 'N/A'}</div>
+                    </div>
+                </div>
+            )}
+
             {message.text && (
                 <div className={`p-4 mb-6 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                     {message.text}
@@ -62,7 +77,7 @@ const CreateBooking = () => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                    <div className={resource ? "hidden" : "block"}>
                         <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
                             <FileText size={16} /> Resource ID
                         </label>
@@ -72,6 +87,7 @@ const CreateBooking = () => {
                             value={formData.resourceId}
                             onChange={handleChange}
                             required
+                            readOnly={!!resource}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                             placeholder="e.g. ROOM-101"
                         />
@@ -130,6 +146,7 @@ const CreateBooking = () => {
                         value={formData.attendees}
                         onChange={handleChange}
                         min="1"
+                        max={resource?.capacity || undefined}
                         required
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                     />
