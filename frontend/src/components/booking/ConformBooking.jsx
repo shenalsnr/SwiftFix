@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { bookingService } from '../../services/api';
 import { getResources } from '../../services/resourceService';
-import { CheckCircle, Calendar, Clock, Building2, Users, Search, FilterX } from 'lucide-react';
+import { CheckCircle, Calendar, Clock, Building2, Users, Search, FilterX, Hash } from 'lucide-react';
 
 const ConformBooking = () => {
     const [bookings, setBookings] = useState([]);
@@ -21,7 +21,6 @@ const ConformBooking = () => {
                 getResources()
             ]);
             
-            // Filter ONLY confirmed/approved bookings initially
             const confirmedBookings = bookingsRes.data.filter(b => b.status === 'APPROVED');
             setBookings(confirmedBookings);
             setResources(resourcesRes);
@@ -32,7 +31,6 @@ const ConformBooking = () => {
         }
     };
 
-    // Advanced Filtering Logic
     const filteredBookings = bookings.filter((booking) => {
         const resource = resources.find(r => String(r.id) === String(booking.resourceId));
         const resourceName = resource?.name?.toLowerCase() || '';
@@ -54,7 +52,7 @@ const ConformBooking = () => {
         return (
             <div className="flex justify-center items-center py-20 text-indigo-600">
                 <div className="animate-spin mr-3"><CheckCircle size={32} /></div>
-                <span className="text-xl font-bold">Loading Reports...</span>
+                <span className="text-xl font-bold">Generating Report...</span>
             </div>
         );
     }
@@ -68,8 +66,18 @@ const ConformBooking = () => {
                     </div>
                     <div>
                         <h2 className="text-3xl font-black text-gray-900 tracking-tight">Confirmed Bookings</h2>
-                        <p className="text-gray-500 text-sm mt-1">Search and manage approved reservations.</p>
+                        <p className="text-gray-500 text-sm mt-1">Detailed administrative table of all approved reservations.</p>
                     </div>
+                </div>
+            </div>
+
+            {/* Stats Overview */}
+            <div className="flex justify-center mb-10">
+                <div className="bg-white px-10 py-8 rounded-[2.5rem] shadow-xl shadow-green-900/5 border border-green-100 flex flex-col items-center group hover:scale-105 transition-transform duration-300">
+                    <span className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] mb-1">Total Confirmed</span>
+                    <span className="text-4xl font-black text-gray-900 tracking-tighter">
+                        {filteredBookings.length}
+                    </span>
                 </div>
             </div>
 
@@ -104,69 +112,76 @@ const ConformBooking = () => {
                 )}
             </div>
 
-            {filteredBookings.length === 0 ? (
-                <div className="bg-white p-16 rounded-3xl text-center shadow-lg border border-gray-100 flex flex-col items-center justify-center">
-                    <Building2 size={64} className="text-gray-200 mb-4" />
-                    <h3 className="text-xl font-bold text-gray-700 mb-2">No Matching Bookings</h3>
-                    <p className="text-gray-500">Try adjusting your search or date filters.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredBookings.map((booking) => {
-                        const resource = resources.find(r => String(r.id) === String(booking.resourceId));
-                        return (
-                            <div 
-                                key={booking.id} 
-                                className="bg-white rounded-3xl p-6 shadow-xl shadow-green-900/5 border border-green-50 flex flex-col transition-all hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-900/10"
-                            >
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex-1">
-                                        <h3 className="text-xl font-black text-gray-900 truncate pr-2">
-                                            {resource ? resource.name : 'Unknown Resource'}
-                                        </h3>
-                                        <div className="mt-1 flex items-center gap-2">
-                                            {resource ? (
-                                                <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded uppercase text-[10px] font-black tracking-wider border border-blue-100">
-                                                    {resource.type}
+            <div className="bg-white rounded-[2rem] shadow-2xl shadow-indigo-900/5 overflow-hidden border border-gray-100">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-gray-100 text-gray-700 uppercase text-xs font-black tracking-[0.15em] border-b border-gray-200">
+                            <tr>
+                                <th className="px-8 py-5 flex items-center gap-2 font-black "><Building2 size={16}/> Resource</th>
+                                <th className="px-8 py-5 font-black "><Hash size={16} className="inline mr-2"/> Student ID</th>
+                                <th className="px-8 py-5 font-black "><Calendar size={16} className="inline mr-2"/> Date</th>
+                                <th className="px-8 py-5 font-black "><Clock size={16} className="inline mr-2"/> Time</th>
+                                <th className="px-8 py-5 text-center font-black "><Users size={16} className="inline mr-2"/> People</th>
+                                <th className="px-8 py-5 text-center font-black ">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50 font-medium ">
+                            {filteredBookings.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="px-8 py-20 text-center">
+                                        <div className="flex flex-col items-center justify-center">
+                                            <Building2 size={48} className="text-gray-200 mb-4" />
+                                            <h3 className="text-lg font-bold text-gray-700">No matching bookings found</h3>
+                                            <p className="text-gray-400 text-sm">Adjust your filters to see more results.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredBookings.map((booking) => {
+                                    const resource = resources.find(r => String(r.id) === String(booking.resourceId));
+                                    return (
+                                        <tr key={booking.id} className="hover:bg-indigo-50/30 transition-colors group">
+                                            <td className="px-8 py-5">
+                                                <div className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors">{resource ? resource.name : 'Unknown'}</div>
+                                                <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-0.5">{resource?.type || 'N/A'}</div>
+                                            </td>
+                                            <td className="px-8 py-5">
+                                                <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm font-bold border border-gray-200">
+                                                    {booking.userId}
                                                 </span>
-                                            ) : (
-                                                <span className="text-gray-400 text-[10px]">Loading...</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="flex-shrink-0 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1 border border-green-200">
-                                        <CheckCircle size={12} /> Confirmed
-                                    </div>
-                                </div>
-
-                                <div className="bg-gray-50 rounded-2xl p-4 mt-auto space-y-3 border border-gray-100">
-                                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-indigo-500 shadow-sm border border-gray-100">
-                                            <Calendar size={14} />
-                                        </div>
-                                        <span className="font-bold">{booking.date}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-indigo-500 shadow-sm border border-gray-100">
-                                            <Clock size={14} />
-                                        </div>
-                                        <span className="font-bold">{booking.startTime.slice(0, 5)} - {booking.endTime.slice(0, 5)}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-indigo-500 shadow-sm border border-gray-100">
-                                            <Users size={14} />
-                                        </div>
-                                        <span><span className="font-bold">{booking.attendees}</span> Attendees</span>
-                                    </div>
-                                </div>
-                                
-                                <div className="mt-4 pt-4 border-t border-gray-100">
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Booked By (Student ID)</p>
-                                    <p className="font-bold text-gray-800 text-sm truncate">{booking.userId}</p>
-                                </div>
-                            </div>
-                        );
-                    })}
+                                            </td>
+                                            <td className="px-8 py-5 text-sm font-bold text-gray-600">
+                                                {booking.date}
+                                            </td>
+                                            <td className="px-8 py-5 text-sm font-bold text-gray-600">
+                                                {booking.startTime.slice(0, 5)} - {booking.endTime.slice(0, 5)}
+                                            </td>
+                                            <td className="px-8 py-5 text-center">
+                                                <span className="text-sm font-bold text-gray-900 bg-blue-50/50 px-2 py-1 rounded-md">
+                                                    {booking.attendees}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5">
+                                                <div className="flex justify-center">
+                                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-200">
+                                                        <CheckCircle size={12} /> Confirmed
+                                                    </span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {/* Table Footer / Summary */}
+            {filteredBookings.length > 0 && (
+                <div className="mt-6 px-8 flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">
+                    <span>Total Confirmed: {filteredBookings.length}</span>
+                    <span>Last Synced: {new Date().toLocaleTimeString()}</span>
                 </div>
             )}
         </div>
