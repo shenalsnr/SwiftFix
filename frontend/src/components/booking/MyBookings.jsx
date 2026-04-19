@@ -34,9 +34,11 @@ const MyBookings = () => {
     };
 
     const handleCancel = async (id) => {
-        if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+        const reason = window.prompt('Please enter a reason for cancellation:');
+        if (reason === null) return; // User cancelled prompt
+        
         try {
-            await bookingService.cancelBooking(id);
+            await bookingService.cancelBooking(id, reason || 'Cancelled by user');
             fetchBookings();
         } catch (error) {
             alert(error.response?.data?.message || 'Error cancelling booking');
@@ -106,8 +108,9 @@ const MyBookings = () => {
                                                     {booking.status === 'APPROVED' ? 'CONFIRMED' : booking.status}
                                                 </span>
                                                 {booking.rejectionReason && (
-                                                    <div className="mt-1.5 text-[10px] text-rose-500 font-medium max-w-[200px]">
-                                                        Note: {booking.rejectionReason}
+                                                    <div className={`mt-1.5 text-[10px] font-medium max-w-[200px] ${booking.status === 'CANCELLED' ? 'text-gray-500' : 'text-rose-500'}`}>
+                                                        {booking.status === 'CANCELLED' ? 'Cancellation Reason: ' : 'Rejection Note: '} 
+                                                        {booking.rejectionReason}
                                                     </div>
                                                 )}
                                             </td>

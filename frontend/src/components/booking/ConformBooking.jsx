@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { bookingService } from '../../services/api';
 import { getResources } from '../../services/resourceService';
-import { CheckCircle, Calendar, Clock, Building2, Users, Search, FilterX, Hash, Trash2 } from 'lucide-react';
+import { CheckCircle, Calendar, Clock, Building2, Users, Search, FilterX, Hash, Trash2, MessageSquareText, XCircle } from 'lucide-react';
 
 const ConformBooking = () => {
     const [bookings, setBookings] = useState([]);
@@ -9,6 +9,8 @@ const ConformBooking = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterDate, setFilterDate] = useState('');
+    const [cancellingId, setCancellingId] = useState(null);
+    const [cancelReason, setCancelReason] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -48,15 +50,24 @@ const ConformBooking = () => {
         setFilterDate('');
     };
 
-    const handleRemove = async (id) => {
-        if (window.confirm('Are you sure you want to remove this confirmed booking?')) {
-            try {
-                await bookingService.cancelBooking(id);
-                fetchData();
-            } catch (error) {
-                console.error("Error removing booking:", error);
-                alert("Failed to remove booking");
-            }
+    const handleRemove = (id) => {
+        setCancellingId(cancellingId === id ? null : id);
+        setCancelReason('');
+    };
+
+    const handleConfirmCancel = async (id) => {
+        if (!cancelReason) {
+            alert('Please provide a reason for cancellation');
+            return;
+        }
+        try {
+            await bookingService.cancelBooking(id, cancelReason);
+            setCancellingId(null);
+            setCancelReason('');
+            fetchData();
+        } catch (error) {
+            console.error("Error removing booking:", error);
+            alert("Failed to remove booking");
         }
     };
 
@@ -153,46 +164,72 @@ const ConformBooking = () => {
                                 filteredBookings.map((booking) => {
                                     const resource = resources.find(r => String(r.id) === String(booking.resourceId));
                                     return (
-                                        <tr key={booking.id} className="hover:bg-indigo-50/30 transition-colors group">
-                                            <td className="px-8 py-5">
-                                                <div className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors">{resource ? resource.name : 'Unknown'}</div>
-                                                <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-0.5">{resource?.type || 'N/A'}</div>
-                                            </td>
-                                            <td className="px-8 py-5">
-                                                <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm font-bold border border-gray-200">
-                                                    {booking.userId}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-5 text-sm font-bold text-gray-600">
-                                                {booking.date}
-                                            </td>
-                                            <td className="px-8 py-5 text-sm font-bold text-gray-600">
-                                                {booking.startTime.slice(0, 5)} - {booking.endTime.slice(0, 5)}
-                                            </td>
-                                            <td className="px-8 py-5 text-center">
-                                                <span className="text-sm font-bold text-gray-900 bg-blue-50/50 px-2 py-1 rounded-md">
-                                                    {booking.attendees}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-5">
-                                                <div className="flex justify-center">
-                                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-200">
-                                                        <CheckCircle size={12} /> Confirmed
+                                        <React.Fragment key={booking.id}>
+                                            <tr className="hover:bg-indigo-50/30 transition-colors group">
+                                                <td className="px-8 py-5">
+                                                    <div className="font-black text-gray-900 group-hover:text-indigo-600 transition-colors">{resource ? resource.name : 'Unknown'}</div>
+                                                    <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-0.5">{resource?.type || 'N/A'}</div>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm font-bold border border-gray-200">
+                                                        {booking.userId}
                                                     </span>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-5">
-                                                <div className="flex justify-center">
-                                                    <button 
-                                                        onClick={() => handleRemove(booking.id)}
-                                                        className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors group/btn"
-                                                        title="Remove Booking"
-                                                    >
-                                                        <Trash2 size={18} className="group-hover/btn:scale-110 transition-transform" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                </td>
+                                                <td className="px-8 py-5 text-sm font-bold text-gray-600">
+                                                    {booking.date}
+                                                </td>
+                                                <td className="px-8 py-5 text-sm font-bold text-gray-600">
+                                                    {booking.startTime.slice(0, 5)} - {booking.endTime.slice(0, 5)}
+                                                </td>
+                                                <td className="px-8 py-5 text-center">
+                                                    <span className="text-sm font-bold text-gray-900 bg-blue-50/50 px-2 py-1 rounded-md">
+                                                        {booking.attendees}
+                                                    </span>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <div className="flex justify-center">
+                                                        <span className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-200">
+                                                            <CheckCircle size={12} /> Confirmed
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <div className="flex justify-center">
+                                                        <button 
+                                                            onClick={() => handleRemove(booking.id)}
+                                                            className={`p-2 rounded-lg transition-colors group/btn ${cancellingId === booking.id ? 'bg-rose-500 text-white' : 'text-rose-500 hover:bg-rose-50'}`}
+                                                            title={cancellingId === booking.id ? "Close" : "Remove Booking"}
+                                                        >
+                                                            {cancellingId === booking.id ? <XCircle size={18} /> : <Trash2 size={18} className="group-hover/btn:scale-110 transition-transform" />}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {cancellingId === booking.id && (
+                                                <tr className="bg-rose-50/50">
+                                                    <td colSpan="7" className="px-8 py-4">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="flex-1 relative">
+                                                                <MessageSquareText className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-300" size={18} />
+                                                                <input 
+                                                                    type="text"
+                                                                    value={cancelReason}
+                                                                    onChange={(e) => setCancelReason(e.target.value)}
+                                                                    placeholder="Why is this booking being removed? (Required)"
+                                                                    className="w-full pl-12 pr-4 py-2 bg-white border border-rose-100 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none text-sm transition-all"
+                                                                />
+                                                            </div>
+                                                            <button 
+                                                                onClick={() => handleConfirmCancel(booking.id)}
+                                                                className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-rose-700 transition-colors shadow-lg shadow-rose-900/10"
+                                                            >
+                                                                Confirm Removal
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
                                     );
                                 })
                             )}
