@@ -8,6 +8,7 @@ import ConformBooking from './components/booking/ConformBooking';
 import AdminHub from './components/AdminHub';
 import FacilitiesCatalogue from './components/FacilitiesCatalogue';
 import StudentCatalogue from './components/StudentCatalogue';
+import AdminFeedback from './components/AdminFeedback';
 import { UserCheck, ShieldCheck, GraduationCap, Building2 } from 'lucide-react';
 
 const Navigation = () => {
@@ -59,6 +60,7 @@ const AppContent = () => {
                     <Route path="/admin/bookings" element={<AdminDashboard />} />
                     <Route path="/admin/confirmed-bookings" element={<ConformBooking />} />
                     <Route path="/admin/catalogue" element={<FacilitiesCatalogue />} />
+                    <Route path="/admin/feedback" element={<AdminFeedback />} />
                     <Route path="/book" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><CreateBooking /></div>} />
                 </Routes>
             </main>

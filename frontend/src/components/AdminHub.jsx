@@ -7,6 +7,7 @@ import {
     ArrowRight,
     LayoutDashboard,
     CheckCircle,
+    MessageSquare,
 } from 'lucide-react';
 
 const ADMIN_SECTIONS = [
@@ -40,6 +41,16 @@ const ADMIN_SECTIONS = [
         href: '/admin/catalogue',
         tag: 'Inventory'
     },
+    {
+        title: 'Student Feedback',
+        description: 'Analyze ratings and detailed suggestions from students to improve campus facilities.',
+        icon: MessageSquare,
+        color: 'text-amber-600',
+        iconBg: 'bg-amber-50',
+        borderColor: 'border-amber-100',
+        href: '/admin/feedback',
+        tag: 'User Insights'
+    },
 ];
 
 const AdminHub = () => {
@@ -66,7 +77,7 @@ const AdminHub = () => {
 
 
                 {/* Section Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {ADMIN_SECTIONS.map(({ title, description, icon: Icon, color, iconBg, borderColor, href, tag }) => (
                         <Link
                             key={href}

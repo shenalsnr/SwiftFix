@@ -836,7 +836,23 @@ const FeedbackForm = ({ onClose }) => {
       return;
     }
     setLoading(true);
-    // Simulate API call
+
+    const formData = new FormData(e.target);
+    const newFeedback = {
+      id: `FB-${Date.now()}`,
+      studentId: e.target.studentId.value,
+      department: e.target.dept.value,
+      rating: rating,
+      message: e.target.msg.value,
+      date: new Date().toISOString().split('T')[0],
+      isReal: true // flag to distinguish from mock data
+    };
+
+    // Save to localStorage
+    const existing = JSON.parse(localStorage.getItem('swiftfix_feedback') || '[]');
+    localStorage.setItem('swiftfix_feedback', JSON.stringify([newFeedback, ...existing]));
+
+    // Simulate API delay
     setTimeout(() => {
       setLoading(false);
       setSubmitted(true);
