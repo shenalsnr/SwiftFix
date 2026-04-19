@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { bookingService } from '../../services/api';
 import { getResources } from '../../services/resourceService';
-import { CheckCircle, Calendar, Clock, Building2, Users, Search, FilterX, Hash, Trash2, MessageSquareText, XCircle } from 'lucide-react';
+import { CheckCircle, Calendar, Clock, Building2, Users, Search, FilterX, Hash, Trash2, MessageSquareText, XCircle, ChevronLeft } from 'lucide-react';
 
 const ConformBooking = () => {
+    const navigate = useNavigate();
     const [bookings, setBookings] = useState([]);
     const [resources, setResources] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -82,6 +84,13 @@ const ConformBooking = () => {
 
     return (
         <div className="max-w-6xl mx-auto p-6 md:p-8">
+            <button 
+                onClick={() => navigate('/admin')}
+                className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-indigo-600 transition-colors mb-6 group"
+            >
+                <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                Back to Admin Hub
+            </button>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-4 border-b border-gray-200">
                 <div className="flex items-center gap-3">
                     <div className="p-3 bg-green-100 rounded-2xl text-green-600 shadow-sm border border-green-200">

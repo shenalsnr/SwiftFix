@@ -26,7 +26,7 @@ const AdminFeedback = () => {
                     <div>
                         <button 
                             onClick={() => navigate('/admin')}
-                            className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-indigo-600 transition-colors mb-4 group"
+                            className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-indigo-600 transition-colors mb-6 group"
                         >
                             <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
                             Back to Admin Hub

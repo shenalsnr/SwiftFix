@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { bookingService } from '../../services/api';
-import { LayoutDashboard, CheckCircle, XCircle, Users, Calendar, Clock, MessageSquareText, Settings } from 'lucide-react';
+import { LayoutDashboard, CheckCircle, XCircle, Users, Calendar, Clock, MessageSquareText, Settings, ChevronLeft } from 'lucide-react';
 import { getResources } from '../../services/resourceService';
 
 const AdminDashboard = () => {
@@ -75,6 +75,13 @@ const AdminDashboard = () => {
 
     return (
         <div className="max-w-6xl mx-auto p-6">
+            <button 
+                onClick={() => navigate('/admin')}
+                className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-indigo-600 transition-colors mb-6 group"
+            >
+                <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                Back to Admin Hub
+            </button>
             <div className="flex justify-between items-center mb-8">
                 <h2 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
                     <LayoutDashboard className="text-indigo-600" />
