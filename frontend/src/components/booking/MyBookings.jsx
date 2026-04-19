@@ -129,7 +129,7 @@ const MyBookings = () => {
                     </div>
                 </div>
             )}
-            
+
             <div className="mt-8 text-center">
                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest select-none">SwiftFix Personal Dashboard</p>
             </div>
