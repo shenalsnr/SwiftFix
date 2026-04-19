@@ -1,0 +1,6 @@
+# Ignore root target and component targets if nested
+**/target/
+**/*.class
+node_modules/
+.idea/
+*.iml
