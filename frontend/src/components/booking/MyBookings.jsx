@@ -164,10 +164,6 @@ const MyBookings = () => {
                 </div>
             )}
 
-            <div className="mt-8 text-center">
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest select-none">SwiftFix Personal Dashboard</p>
-            </div>
-
             {/* QR Modal */}
             {showQrModal && selectedBooking && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">

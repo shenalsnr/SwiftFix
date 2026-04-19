@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 /* ═══════════════════════════════════════════════════
    EMBEDDED STYLES — all scoped to .sf-home wrapper
@@ -136,17 +137,7 @@ const STYLES = `
     backdrop-filter: blur(6px);
   }
   .sf-btn-outline:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); color: #fff; }
-  .sf-stats {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;
-  }
-  .sf-stat {
-    background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.09);
-    border-radius: 16px; padding: 22px 20px; text-align: center;
-    backdrop-filter: blur(10px); transition: all 0.3s ease;
-  }
-  .sf-stat:hover { background: rgba(255,255,255,0.08); transform: translateY(-3px); border-color: rgba(99,102,241,0.35); }
-  .sf-stat-num { font-size: 2.1rem; font-weight: 800; color: #fff; line-height: 1; }
-  .sf-stat-lbl { font-size: 0.8rem; color: #94a3b8; margin-top: 6px; font-weight: 500; }
+
 
   /* ── Section shared ── */
   .sf-section { padding: 96px 5%; }
@@ -487,50 +478,13 @@ const CONTACT_CARDS = [
   },
 ];
 
-/* ══════════════════════════════════════════════════
-   ANIMATED COUNTER
-   ══════════════════════════════════════════════════ */
-function useCounter(target, duration = 1800) {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const started = useRef(false);
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !started.current) {
-        started.current = true;
-        const t0 = performance.now();
-        const tick = (now) => {
-          const p = Math.min((now - t0) / duration, 1);
-          setCount(Math.floor((1 - Math.pow(1 - p, 3)) * target));
-          if (p < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      }
-    }, { threshold: 0.5 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [target, duration]);
-
-  return [count, ref];
-}
-
-function StatBox({ value, suffix, label }) {
-  const [n, ref] = useCounter(value);
-  return (
-    <div className="sf-stat" ref={ref}>
-      <div className="sf-stat-num">{n}{suffix}</div>
-      <div className="sf-stat-lbl">{label}</div>
-    </div>
-  );
-}
 
 /* ══════════════════════════════════════════════════
    MAIN COMPONENT
    ══════════════════════════════════════════════════ */
 const Home = () => {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
@@ -584,6 +538,7 @@ const Home = () => {
             className="sf-nav-login"
             id="nav-login"
             type="button"
+            onClick={() => navigate('/auth')}
           >
             Login
           </button>
@@ -633,12 +588,7 @@ const Home = () => {
             </button>
           </div>
 
-          <div className="sf-stats sf-fade sf-d5">
-            <StatBox value={120} suffix="+" label="Campus Resources" />
-            <StatBox value={5000} suffix="+" label="Bookings Completed" />
-            <StatBox value={98}  suffix="%" label="Satisfaction Rate" />
-            <StatBox value={24}  suffix="/7" label="System Uptime" />
-          </div>
+
         </div>
       </section>
 

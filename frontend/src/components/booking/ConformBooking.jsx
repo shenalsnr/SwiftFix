@@ -212,7 +212,7 @@ const ConformBooking = () => {
                                                             <div className="flex-1 relative">
                                                                 <MessageSquareText className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-300" size={18} />
                                                                 <input 
-                                                                    type="text"
+                                                                    type="text" 
                                                                     value={cancelReason}
                                                                     onChange={(e) => setCancelReason(e.target.value)}
                                                                     placeholder="Why is this booking being removed? (Required)"
