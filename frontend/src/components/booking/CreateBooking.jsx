@@ -48,6 +48,21 @@ const CreateBooking = () => {
         const selectedStart = new Date(`${formData.date}T${formData.startTime}`);
         const selectedEnd = new Date(`${formData.date}T${formData.endTime}`);
 
+        // Operating Hours Validation (7 AM - 6 PM)
+        const startHour = parseInt(formData.startTime.split(':')[0]);
+        const endHour = parseInt(formData.endTime.split(':')[0]);
+        const endMinutes = parseInt(formData.endTime.split(':')[1]);
+
+        if (startHour < 7) {
+            setConflictError('Bookings cannot start before 7:00 AM.');
+            return;
+        }
+
+        if (endHour > 18 || (endHour === 18 && endMinutes > 0)) {
+            setConflictError('Bookings must end by 6:00 PM.');
+            return;
+        }
+
         if (selectedStart >= selectedEnd) {
              setConflictError('Start time must be before end time.');
              return;
@@ -154,6 +169,7 @@ const CreateBooking = () => {
                             type="date"
                             name="date"
                             value={formData.date}
+                            min={new Date().toISOString().split('T')[0]}
                             onChange={handleChange}
                             required
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
@@ -170,6 +186,8 @@ const CreateBooking = () => {
                             type="time"
                             name="startTime"
                             value={formData.startTime}
+                            min="07:00"
+                            max="18:00"
                             onChange={handleChange}
                             required
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
@@ -183,6 +201,8 @@ const CreateBooking = () => {
                             type="time"
                             name="endTime"
                             value={formData.endTime}
+                            min="07:00"
+                            max="18:00"
                             onChange={handleChange}
                             required
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
