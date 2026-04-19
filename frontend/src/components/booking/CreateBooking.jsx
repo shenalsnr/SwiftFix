@@ -25,8 +25,8 @@ const CreateBooking = () => {
         const fetchBookings = async () => {
             try {
                 const response = await bookingService.getAllBookings();
-                const relevant = response.data.filter(b => 
-                    b.resourceId === formData.resourceId && 
+                const relevant = response.data.filter(b =>
+                    b.resourceId === formData.resourceId &&
                     (b.status === 'PENDING' || b.status === 'APPROVED')
                 );
                 setExistingBookings(relevant);
@@ -64,18 +64,18 @@ const CreateBooking = () => {
         }
 
         if (selectedStart >= selectedEnd) {
-             setConflictError('Start time must be before end time.');
-             return;
+            setConflictError('Start time must be before end time.');
+            return;
         }
 
         const hasConflict = existingBookings.some(b => {
-             if (b.date !== formData.date) return false;
-             
-             const fixTime = (t) => t.length === 5 ? `${t}:00` : t;
-             const bStart = new Date(`${b.date}T${fixTime(b.startTime)}`);
-             const bEnd = new Date(`${b.date}T${fixTime(b.endTime)}`);
+            if (b.date !== formData.date) return false;
 
-             return selectedStart < bEnd && selectedEnd > bStart;
+            const fixTime = (t) => t.length === 5 ? `${t}:00` : t;
+            const bStart = new Date(`${b.date}T${fixTime(b.startTime)}`);
+            const bEnd = new Date(`${b.date}T${fixTime(b.endTime)}`);
+
+            return selectedStart < bEnd && selectedEnd > bStart;
         });
 
         if (hasConflict) {
@@ -105,9 +105,9 @@ const CreateBooking = () => {
             console.error("Submission Error:", error.response?.data || error.message);
             const errorMsg = error.response?.data?.message || error.message || 'Error creating booking. Please check for time conflicts.';
             alert("Submission Error: " + errorMsg);
-            setMessage({ 
-                type: 'error', 
-                text: errorMsg 
+            setMessage({
+                type: 'error',
+                text: errorMsg
             });
         } finally {
             setLoading(false);
