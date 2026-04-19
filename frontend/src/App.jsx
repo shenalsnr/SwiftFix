@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import Home from './components/home/home';
 import CreateBooking from './components/booking/CreateBooking';
 import MyBookings from './components/booking/MyBookings';
 import AdminDashboard from './components/booking/AdminDashboard';
@@ -12,6 +13,9 @@ import { UserCheck, ShieldCheck, GraduationCap, Building2 } from 'lucide-react';
 const Navigation = () => {
     const location = useLocation();
     const isAdminRoute = location.pathname.startsWith('/admin');
+    const isHome = location.pathname === '/';
+    
+    if (isHome) return null;
 
     return (
         <nav className="bg-black border-b border-gray-800 sticky top-0 z-50">
@@ -39,32 +43,39 @@ const Navigation = () => {
     );
 };
 
-const App = () => {
+const AppContent = () => {
+    const location = useLocation();
+    const isHome = location.pathname === '/';
+
     return (
-        <Router>
-            <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
-                {/* Navigation Bar */}
-                <Navigation />
-
-                {/* Main Content Area */}
-                <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                    <Routes>
-                        <Route path="/" element={<CreateBooking />} />
-                        <Route path="/my-bookings" element={<MyBookings />} />
-                        <Route path="/catalogue" element={<StudentCatalogue />} />
-                        <Route path="/admin" element={<AdminHub />} />
-                        <Route path="/admin/bookings" element={<AdminDashboard />} />
-                        <Route path="/admin/confirmed-bookings" element={<ConformBooking />} />
-                        <Route path="/admin/catalogue" element={<FacilitiesCatalogue />} />
-                    </Routes>
-                </main>
-
-                {/* Footer */}
+        <div className="min-h-screen bg-transparent font-sans text-gray-900">
+            <Navigation />
+            <main>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/my-bookings" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><MyBookings /></div>} />
+                    <Route path="/catalogue" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><StudentCatalogue /></div>} />
+                    <Route path="/admin" element={<AdminHub />} />
+                    <Route path="/admin/bookings" element={<AdminDashboard />} />
+                    <Route path="/admin/confirmed-bookings" element={<ConformBooking />} />
+                    <Route path="/admin/catalogue" element={<FacilitiesCatalogue />} />
+                    <Route path="/book" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><CreateBooking /></div>} />
+                </Routes>
+            </main>
+            {!isHome && (
                 <footer className="mt-auto py-8 text-center text-gray-500 text-xs border-t border-gray-800 bg-black">
                     <p className="mb-1">SwiftFix &bull; Smart Campus Operations Hub</p>
                     <p>&copy; 2026 SwiftFix. All rights reserved.</p>
                 </footer>
-            </div>
+            )}
+        </div>
+    );
+};
+
+const App = () => {
+    return (
+        <Router>
+            <AppContent />
         </Router>
     );
 };
