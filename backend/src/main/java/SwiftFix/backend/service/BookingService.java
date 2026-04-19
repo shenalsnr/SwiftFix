@@ -72,7 +72,7 @@ public class BookingService {
     public Booking cancelBooking(Long id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-        
+
         if (booking.getStatus() != BookingStatus.APPROVED) {
             throw new RuntimeException("Only APPROVED bookings can be cancelled");
         }

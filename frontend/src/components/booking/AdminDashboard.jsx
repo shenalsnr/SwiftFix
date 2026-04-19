@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { bookingService } from '../services/api';
+import { bookingService } from '../../services/api';
 import { LayoutDashboard, CheckCircle, XCircle, Users, Calendar, Clock, MessageSquareText, Settings, Ticket } from 'lucide-react';
 
-import { getResources } from '../services/resourceService';
+import { getResources } from '../../services/resourceService';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
