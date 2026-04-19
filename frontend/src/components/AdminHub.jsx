@@ -5,8 +5,6 @@ import {
     CalendarCheck, 
     ShieldCheck, 
     Settings, 
-    PieChart, 
-    Users, 
     ArrowRight,
     ClipboardList,
     Building2,
@@ -16,11 +14,7 @@ import {
 const AdminHub = () => {
     const navigate = useNavigate();
 
-    const stats = [
-        { label: 'Active Resources', value: '24', icon: <Building2 size={20} />, color: 'text-blue-600', bg: 'bg-blue-50' },
-        { label: 'Total Bookings', value: '142', icon: <CalendarCheck size={20} />, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-        { label: 'System Health', value: '98%', icon: <ShieldCheck size={20} />, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    ];
+
 
     const menuItems = [
         {
@@ -78,21 +72,6 @@ const AdminHub = () => {
                         <p className="max-w-2xl text-lg text-gray-500 font-medium leading-relaxed">
                             Welcome, Administrator. Monitor and manage all campus resource operations from this centralized hub.
                         </p>
-                    </div>
-
-                    {/* Quick Stats */}
-                    <div className="flex gap-4">
-                        {stats.map((stat, idx) => (
-                            <div key={idx} className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4 min-w-[180px]">
-                                <div className={`${stat.bg} ${stat.color} p-3 rounded-2xl`}>
-                                    {stat.icon}
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">{stat.label}</p>
-                                    <p className="text-xl font-black text-gray-900">{stat.value}</p>
-                                </div>
-                            </div>
-                        ))}
                     </div>
                 </div>
 
