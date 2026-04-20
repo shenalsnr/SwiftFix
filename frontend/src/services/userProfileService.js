@@ -16,11 +16,11 @@ export const userProfileService = {
 
     /**
      * Update user profile and notification preferences
-     * PUT /api/users/profile
+     * PUT /api/users/update-profile
      * @param {Object} profileData - User profile and notification data
      */
     updateUserProfile: (profileData) =>
-        api.put(`${API_BASE_URL}/profile`, profileData),
+        api.post(`${API_BASE_URL}/update-profile`, profileData),
 
     /**
      * Get user by ID

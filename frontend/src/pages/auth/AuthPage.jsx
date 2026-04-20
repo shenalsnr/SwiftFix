@@ -61,9 +61,9 @@ const AuthPage = () => {
 
             // Redirect based on role from database
             if (role === 'ADMIN') {
-                navigate('/admin');
+                window.location.href = '/admin';
             } else {
-                navigate('/student-catalogue');
+                window.location.href = '/student-catalogue';
             }
         } catch (err) {
             const errorMsg = err.response?.data?.message || err.response?.data?.error || 'Login failed. Please check your credentials.';
@@ -134,9 +134,9 @@ const AuthPage = () => {
 
             // Redirect based on role
             if (role === 'ADMIN') {
-                navigate('/admin');
+                window.location.href = '/admin';
             } else {
-                navigate('/student-catalogue');
+                window.location.href = '/student-catalogue';
             }
         } catch (err) {
             // Show actual error message from backend

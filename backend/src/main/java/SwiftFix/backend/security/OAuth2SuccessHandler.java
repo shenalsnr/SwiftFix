@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -38,48 +39,52 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String name = oauth2User.getAttribute("name");
 
         System.out.println("OAuth2 Success - Email: " + email + ", Name: " + name);
-
-        if (email == null || email.isEmpty()) {
-            response.sendRedirect(frontendUrl + "/auth?error=oauth_email_missing");
-            return;
+        
+        User user;
+        if (email != null && !email.isEmpty()) {
+            // Check if user already exists
+            Optional<User> existingUser = userRepository.findByEmail(email);
+            
+            if (existingUser.isEmpty()) {
+                // Create new user if doesn't exist
+                User newUser = User.builder()
+                        .email(email)
+                        .fullName(name != null ? name : email.split("@")[0])
+                        .studentId("OAUTH2_" + System.currentTimeMillis())  // Generate a unique student ID
+                        .phoneNumber("")  // OAuth2 doesn't provide phone
+                        .address("")      // OAuth2 doesn't provide address
+                        .faculty("")      // OAuth2 doesn't provide faculty
+                        .password("")     // OAuth2 users don't have passwords
+                        .role("USER")
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
+                        .build();
+                
+                user = userRepository.save(newUser);
+                System.out.println("✅ New OAuth2 user created: " + email);
+            } else {
+                user = existingUser.get();
+                System.out.println("✅ Existing user found: " + email);
+            }
+            
+            // Generate JWT token
+            String token = jwtProvider.generateToken(user.getId(), user.getEmail(), user.getRole(), user.getFullName());
+            
+            // Build redirect URL
+            String redirectUrl = String.format("%s/oauth-callback?token=%s&userId=%d&role=%s&email=%s&fullName=%s",
+                    frontendUrl,
+                    token,
+                    user.getId(),
+                    user.getRole(),
+                    URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8),
+                    URLEncoder.encode(user.getFullName(), StandardCharsets.UTF_8));
+            
+            this.setDefaultTargetUrl(redirectUrl);
+            super.onAuthenticationSuccess(request, response, authentication);
+        } else {
+            // Handle error case
+            this.setDefaultTargetUrl(frontendUrl + "/auth?error=oauth2_email_missing");
+            super.onAuthenticationSuccess(request, response, authentication);
         }
-
-        // Find existing user or create a new one
-        User user = userRepository.findByEmail(email).orElseGet(() -> {
-            User newUser = User.builder()
-                    .email(email)
-                    .fullName(name != null ? name : email.split("@")[0])
-                    .studentId("OAUTH2_" + System.currentTimeMillis())
-                    .phoneNumber("")
-                    .address("")
-                    .faculty("")
-                    .password("")
-                    .role("USER")
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .build();
-            User saved = userRepository.save(newUser);
-            System.out.println("✅ New OAuth2 user created: " + email);
-            return saved;
-        });
-
-        System.out.println("✅ OAuth2 user authenticated: " + email + " (ID: " + user.getId() + ")");
-
-        // Generate a JWT token so the frontend can authenticate API calls
-        String token = jwtProvider.generateToken(
-                user.getId(), user.getEmail(), user.getRole(), user.getFullName());
-
-        // Pass token and user info as URL params to the frontend OAuth callback page
-        String encodedEmail    = URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8);
-        String encodedFullName = URLEncoder.encode(user.getFullName() != null ? user.getFullName() : "", StandardCharsets.UTF_8);
-
-        String redirectUrl = frontendUrl + "/oauth-callback"
-                + "?token="    + token
-                + "&userId="   + user.getId()
-                + "&role="     + user.getRole()
-                + "&email="    + encodedEmail
-                + "&fullName=" + encodedFullName;
-
-        response.sendRedirect(redirectUrl);
     }
 }

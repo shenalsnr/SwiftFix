@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -30,9 +32,7 @@ public class UserController {
     }
 
     /**
-     * GET /api/users/me - Get current logged-in user (Module E - Auth Integration)
-     * Requires Authentication Token in header
-     * Returns user details with notification preferences (Module D - Notifications)
+     * GET /api/users/me - Get current logged-in user
      */
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getCurrentUser(@RequestHeader(value = "Authorization", required = false) String authHeader) {
@@ -49,20 +49,41 @@ public class UserController {
     }
 
     /**
-     * PUT /api/users/profile - Update user profile and notification preferences
-     * Requires Authentication Token in header
-     * Integrates Module E (Auth) and Module D (Notifications)
+     * POST /api/users/update-profile - Update user profile and notification preferences
      */
-    @PutMapping("/profile")
+    @PostMapping("/update-profile")
     public ResponseEntity<UserDTO> updateUserProfile(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestBody UpdateProfileRequest request) {
+            @RequestParam("fullName") String fullName,
+            @RequestParam(value = "studentId", required = false) String studentId,
+            @RequestParam("phoneNumber") String phoneNumber,
+            @RequestParam("address") String address,
+            @RequestParam("faculty") String faculty,
+            @RequestParam(value = "emailNotifications", required = false) Boolean emailNotifications,
+            @RequestParam(value = "bookingUpdates", required = false) Boolean bookingUpdates,
+            @RequestParam(value = "resourceAvailability", required = false) Boolean resourceAvailability,
+            @RequestParam(value = "systemAlerts", required = false) Boolean systemAlerts,
+            @RequestParam(value = "profilePhoto", required = false) MultipartFile profilePhoto) {
+        
         Long userId = extractUserIdFromToken(authHeader);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
+        UpdateProfileRequest request = UpdateProfileRequest.builder()
+                .fullName(fullName)
+                .studentId(studentId)
+                .phoneNumber(phoneNumber)
+                .address(address)
+                .faculty(faculty)
+                .emailNotifications(emailNotifications)
+                .bookingUpdates(bookingUpdates)
+                .resourceAvailability(resourceAvailability)
+                .systemAlerts(systemAlerts)
+                .build();
+
         try {
-            UserDTO updatedUser = userService.updateUserProfile(userId, request);
+            UserDTO updatedUser = userService.updateUserProfile(userId, request, profilePhoto);
             return ResponseEntity.ok(updatedUser);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { userProfileService } from '../../services/userProfileService';
-import { User, Mail, Phone, MapPin, Building2, AlertCircle, CheckCircle, Loader } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Building2, AlertCircle, CheckCircle, Loader, Upload } from 'lucide-react';
 
 const UserProfile = () => {
     const { user: authUser, isAuthenticated, token } = useAuth();
@@ -10,6 +10,7 @@ const UserProfile = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isEditing, setIsEditing] = useState(false);
+    const [profilePhoto, setProfilePhoto] = useState(null);
 
     const [profileData, setProfileData] = useState({
         fullName: '',
@@ -80,10 +81,28 @@ const UserProfile = () => {
         setSuccess('');
 
         try {
-            const response = await userProfileService.updateUserProfile(formData);
+            const submitData = new FormData();
+            submitData.append('fullName', formData.fullName || '');
+            submitData.append('studentId', formData.studentId || '');
+            submitData.append('phoneNumber', formData.phoneNumber || '');
+            submitData.append('address', formData.address || '');
+            submitData.append('faculty', formData.faculty || '');
+            
+            // Add notification preferences
+            submitData.append('emailNotifications', formData.notificationPreferences.emailNotifications);
+            submitData.append('bookingUpdates', formData.notificationPreferences.bookingUpdates);
+            submitData.append('resourceAvailability', formData.notificationPreferences.resourceAvailability);
+            submitData.append('systemAlerts', formData.notificationPreferences.systemAlerts);
+
+            if (profilePhoto) {
+                submitData.append('profilePhoto', profilePhoto);
+            }
+
+            const response = await userProfileService.updateUserProfile(submitData);
             setProfileData(response.data);
             setFormData(response.data);
             setIsEditing(false);
+            setProfilePhoto(null);
             setSuccess('Profile updated successfully!');
             setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
@@ -120,12 +139,45 @@ const UserProfile = () => {
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-4xl mx-auto">
                 {/* Header Section */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-                        <User className="w-8 h-8 text-blue-600" />
-                        User Profile
-                    </h1>
-                    <p className="text-gray-600">Manage your profile information and notification preferences</p>
+                <div className="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+                            <User className="w-8 h-8 text-blue-600" />
+                            User Profile
+                        </h1>
+                        <p className="text-gray-600">Manage your profile information and notification preferences</p>
+                    </div>
+                    {/* Profile Image Section */}
+                    <div className="flex-shrink-0 text-center">
+                        {profileData.profilePhotoPath ? (
+                            <img 
+                                src={profileData.profilePhotoPath} 
+                                alt="Profile" 
+                                className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md mx-auto"
+                            />
+                        ) : (
+                            <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center border-4 border-white shadow-md mx-auto">
+                                <span className="text-2xl font-bold text-blue-600">
+                                    {profileData.fullName ? profileData.fullName.charAt(0).toUpperCase() : <User className="w-8 h-8 text-blue-600" />}
+                                </span>
+                            </div>
+                        )}
+                        {isEditing && (
+                            <div className="mt-2">
+                                <label className="flex items-center gap-1 cursor-pointer bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700 transition-colors justify-center font-medium">
+                                    <Upload className="w-3 h-3" />
+                                    {profilePhoto ? 'File Selected' : 'Change Photo'}
+                                    <input 
+                                        type="file" 
+                                        className="hidden" 
+                                        accept="image/*"
+                                        onChange={(e) => setProfilePhoto(e.target.files[0])}
+                                    />
+                                </label>
+                                {profilePhoto && <p className="text-[10px] text-gray-500 mt-1 truncate max-w-[80px]">{profilePhoto.name}</p>}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Alert Messages */}
@@ -201,9 +253,20 @@ const UserProfile = () => {
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Student ID
                                 </label>
-                                <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900 font-medium">
-                                    {profileData.studentId || 'Not provided'}
-                                </p>
+                                {isEditing && profileData.studentId && profileData.studentId.startsWith('OAUTH2_') ? (
+                                    <input
+                                        type="text"
+                                        name="studentId"
+                                        value={formData.studentId}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                                        placeholder="Enter your real Student ID"
+                                    />
+                                ) : (
+                                    <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900 font-medium">
+                                        {profileData.studentId || 'Not provided'}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Role */}

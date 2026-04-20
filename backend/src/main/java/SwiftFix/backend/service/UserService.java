@@ -11,15 +11,20 @@ import SwiftFix.backend.repository.NotificationPreferenceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final NotificationPreferenceRepository notificationPreferenceRepository;
+    private static final String UPLOAD_DIR = "uploads/profiles/";
 
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
@@ -74,6 +79,9 @@ public class UserService {
         if (request.getProfilePhotoPath() != null) {
             user.setProfilePhotoPath(request.getProfilePhotoPath());
         }
+        if (request.getRole() != null) {
+            user.setRole(request.getRole());
+        }
 
         User updatedUser = userRepository.save(user);
         return UserDTO.fromUser(updatedUser);
@@ -86,16 +94,27 @@ public class UserService {
      * @return updated UserDTO with notification preferences
      */
     @Transactional
-    public UserDTO updateUserProfile(Long id, UpdateProfileRequest request) {
+    public UserDTO updateUserProfile(Long id, UpdateProfileRequest request, MultipartFile profilePhoto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
-        // Update user details
+        // Update user fields
         if (request.getFullName() != null) {
             user.setFullName(request.getFullName());
         }
         if (request.getPhoneNumber() != null) {
             user.setPhoneNumber(request.getPhoneNumber());
+        }
+        
+        // Handle profile photo upload
+        if (profilePhoto != null && !profilePhoto.isEmpty()) {
+            try {
+                String photoPath = saveProfilePhoto(profilePhoto);
+                user.setProfilePhotoPath(photoPath);
+            } catch (IOException e) {
+                // Log error but continue with other updates
+                System.err.println("Failed to save profile photo: " + e.getMessage());
+            }
         }
         if (request.getAddress() != null) {
             user.setAddress(request.getAddress());
@@ -105,6 +124,9 @@ public class UserService {
         }
         if (request.getProfilePhotoPath() != null) {
             user.setProfilePhotoPath(request.getProfilePhotoPath());
+        }
+        if (request.getStudentId() != null && user.getStudentId() != null && user.getStudentId().startsWith("OAUTH2_")) {
+            user.setStudentId(request.getStudentId());
         }
 
         User updatedUser = userRepository.save(user);
@@ -141,6 +163,23 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         userRepository.delete(user);
+    }
+
+    private String saveProfilePhoto(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+
+        File uploadDir = new File(UPLOAD_DIR);
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs();
+        }
+
+        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        String filePath = UPLOAD_DIR + fileName;
+        
+        file.transferTo(new File(filePath));
+        return filePath;
     }
 }
 
