@@ -3,19 +3,37 @@ import { bookingService } from '../../services/api';
 import { getResources } from '../../services/resourceService';
 import { QRCodeCanvas } from 'qrcode.react';
 import { QrCode, Download, X, Calendar, Clock, User, Landmark } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const MyBookings = () => {
+    const { user, loading: authLoading } = useAuth();
     const [bookings, setBookings] = useState([]);
     const [resources, setResources] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showQrModal, setShowQrModal] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
-    const userId = 'user123'; // Hardcoded for demo
+
+    // Derive the current user ID for API calls
+    const currentUserId = (() => {
+        if (user?.userId) return user.userId;
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.sub;
+            }
+        } catch (e) { }
+        return null;
+    })();
 
     useEffect(() => {
-        fetchBookings();
-        fetchResources();
-    }, []);
+        if (!authLoading && currentUserId) {
+            fetchBookings();
+            fetchResources();
+        } else if (!authLoading && !currentUserId) {
+            setLoading(false);
+        }
+    }, [currentUserId, authLoading]);
 
     const fetchResources = async () => {
         try {
@@ -28,7 +46,7 @@ const MyBookings = () => {
 
     const fetchBookings = async () => {
         try {
-            const response = await bookingService.getUserBookings(userId);
+            const response = await bookingService.getUserBookings(currentUserId);
             setBookings(response.data);
         } catch (error) {
             console.error("Fetch Error:", error.response?.data || error.message);

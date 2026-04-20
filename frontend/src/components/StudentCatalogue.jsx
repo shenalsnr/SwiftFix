@@ -54,15 +54,30 @@ const StudentCatalogue = () => {
         return 'User';
     })();
 
+    // Derive the current user ID for API calls
+    const currentUserId = (() => {
+        if (user?.userId) return user.userId;
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.sub; // subject is the userId in the backend JWT implementation
+            }
+        } catch (e) {
+            // ignore decode errors
+        }
+        return null;
+    })();
+
     useEffect(() => {
         fetchResources();
     }, [filters]);
 
     useEffect(() => {
         const fetchPersonalStats = async () => {
-            if (!user?.userId) return;
+            if (!currentUserId) return;
             try {
-                const res = await bookingService.getUserBookings(user.userId);
+                const res = await bookingService.getUserBookings(currentUserId);
                 setMyBookingsCount(res.data.length || 0);
             } catch (e) {
                 console.error("Failed to load user stats", e);
@@ -72,7 +87,7 @@ const StudentCatalogue = () => {
         if (!authLoading) {
             fetchPersonalStats();
         }
-    }, [user, authLoading]);
+    }, [currentUserId, authLoading]);
 
     const fetchResources = async () => {
         setLoading(true);
