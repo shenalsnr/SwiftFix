@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 /* ═══════════════════════════════════════════════════
    EMBEDDED STYLES — all scoped to .sf-home wrapper
@@ -15,12 +16,12 @@ const STYLES = `
     height: 64px;
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 5%;
-    transition: background 0.35s ease, box-shadow 0.35s ease;
-  }
-  .sf-nav.scrolled {
     background: rgba(8, 15, 35, 0.92);
     backdrop-filter: blur(14px);
     box-shadow: 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .sf-nav.scrolled {
+    /* Kept for react state compatibility, but visual is now default */
   }
   .sf-nav-logo {
     display: flex; align-items: center; gap: 10px;
@@ -136,17 +137,7 @@ const STYLES = `
     backdrop-filter: blur(6px);
   }
   .sf-btn-outline:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); color: #fff; }
-  .sf-stats {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;
-  }
-  .sf-stat {
-    background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.09);
-    border-radius: 16px; padding: 22px 20px; text-align: center;
-    backdrop-filter: blur(10px); transition: all 0.3s ease;
-  }
-  .sf-stat:hover { background: rgba(255,255,255,0.08); transform: translateY(-3px); border-color: rgba(99,102,241,0.35); }
-  .sf-stat-num { font-size: 2.1rem; font-weight: 800; color: #fff; line-height: 1; }
-  .sf-stat-lbl { font-size: 0.8rem; color: #94a3b8; margin-top: 6px; font-weight: 500; }
+
 
   /* ── Section shared ── */
   .sf-section { padding: 96px 5%; }
@@ -320,86 +311,86 @@ const STYLES = `
 const Icon = {
   Zap: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
     </svg>
   ),
   Shield: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
   ),
   Users: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   ),
   BarChart: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
-      <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+      <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" /><line x1="2" y1="20" x2="22" y2="20" />
     </svg>
   ),
   Phone: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.36 2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.77a16 16 0 0 0 6.29 6.29l1.86-1.85a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.36 2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.77a16 16 0 0 0 6.29 6.29l1.86-1.85a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
     </svg>
   ),
   Mail: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-      <polyline points="22,6 12,13 2,6"/>
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
     </svg>
   ),
   MapPin: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
     </svg>
   ),
   Chat: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   ),
   Clock: () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
     </svg>
   ),
   ArrowR: () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+      <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
     </svg>
   ),
   ChevR: () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="9 18 15 12 9 6"/>
+      <polyline points="9 18 15 12 9 6" />
     </svg>
   ),
   ExternalLink: () => (
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-      <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
     </svg>
   ),
   GradCap: () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
     </svg>
   ),
   Close: () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   ),
   Check: () => (
     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12"/>
+      <polyline points="20 6 9 17 4 12" />
     </svg>
   ),
   Star: ({ filled }) => (
     <svg width="28" height="28" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   ),
 };
@@ -487,50 +478,13 @@ const CONTACT_CARDS = [
   },
 ];
 
-/* ══════════════════════════════════════════════════
-   ANIMATED COUNTER
-   ══════════════════════════════════════════════════ */
-function useCounter(target, duration = 1800) {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const started = useRef(false);
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !started.current) {
-        started.current = true;
-        const t0 = performance.now();
-        const tick = (now) => {
-          const p = Math.min((now - t0) / duration, 1);
-          setCount(Math.floor((1 - Math.pow(1 - p, 3)) * target));
-          if (p < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      }
-    }, { threshold: 0.5 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [target, duration]);
-
-  return [count, ref];
-}
-
-function StatBox({ value, suffix, label }) {
-  const [n, ref] = useCounter(value);
-  return (
-    <div className="sf-stat" ref={ref}>
-      <div className="sf-stat-num">{n}{suffix}</div>
-      <div className="sf-stat-lbl">{label}</div>
-    </div>
-  );
-}
 
 /* ══════════════════════════════════════════════════
    MAIN COMPONENT
    ══════════════════════════════════════════════════ */
 const Home = () => {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
@@ -584,6 +538,7 @@ const Home = () => {
             className="sf-nav-login"
             id="nav-login"
             type="button"
+            onClick={() => navigate('/auth')}
           >
             Login
           </button>
@@ -613,7 +568,7 @@ const Home = () => {
           <p className="sf-fade sf-d3">
             SwiftFix is a purpose-built reservation platform for universities. Browse
             available facilities, submit booking requests, and receive instant
-            confirmations — all in one conflict-aware system.
+            confirmations.
           </p>
 
           <div className="sf-hero-btns sf-fade sf-d4">
@@ -633,12 +588,7 @@ const Home = () => {
             </button>
           </div>
 
-          <div className="sf-stats sf-fade sf-d5">
-            <StatBox value={120} suffix="+" label="Campus Resources" />
-            <StatBox value={5000} suffix="+" label="Bookings Completed" />
-            <StatBox value={98}  suffix="%" label="Satisfaction Rate" />
-            <StatBox value={24}  suffix="/7" label="System Uptime" />
-          </div>
+
         </div>
       </section>
 
@@ -750,7 +700,7 @@ const Home = () => {
                 <button
                   onClick={() => setShowFeedbackModal(true)}
                   id={`contact-${c.title.toLowerCase().replace(/\s/g, '-')}`}
-                  style={{ 
+                  style={{
                     background: 'none', border: 'none', cursor: 'pointer',
                     color: c.linkColor, fontWeight: 600, fontSize: '0.92rem', padding: 0,
                     fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4,
@@ -909,9 +859,9 @@ const FeedbackForm = ({ onClose }) => {
             <label htmlFor="msg">Your Feedback</label>
             <textarea required id="msg" className="sf-form-input sf-form-textarea" placeholder="How can we improve SwiftFix?"></textarea>
           </div>
-          <button 
-            type="submit" 
-            className="sf-btn-primary" 
+          <button
+            type="submit"
+            className="sf-btn-primary"
             disabled={loading}
             style={{ width: '100%', justifyContent: 'center', marginTop: 10 }}
           >

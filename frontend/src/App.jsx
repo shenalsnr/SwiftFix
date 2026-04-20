@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 
 // Home Component
 import Home from './components/home/home';
+import AuthPage from './pages/auth/AuthPage';
+import OAuthCallback from './pages/auth/OAuthCallback';
 
 // Booking Components
 import CreateBooking from './components/booking/CreateBooking';
@@ -21,26 +23,32 @@ import AdminTicketDetail from './components/AdminTicketDetail';
 import FacilitiesCatalogue from './components/FacilitiesCatalogue';
 import StudentCatalogue from './components/StudentCatalogue';
 import AdminFeedback from './components/AdminFeedback';
+import UserProfile from './pages/student/StudentProfile';
+import UserManagement from './pages/admin/UserManagement';
 
-import { UserCheck, ShieldCheck, GraduationCap, Building2, AlertTriangle } from 'lucide-react';
+import { UserCheck, ShieldCheck, GraduationCap, Building2, LogOut, User } from 'lucide-react';
+import { useAuth } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 const Navigation = () => {
     const location = useLocation();
+    const { logout } = useAuth();
     const isAdminRoute = location.pathname.startsWith('/admin');
     const isHome = location.pathname === '/';
-    
-    if (isHome) return null;
+    const isAuth = location.pathname === '/auth' || location.pathname === '/oauth-callback';
+
+    if (isHome || isAuth) return null;
 
     return (
         <nav className="bg-black border-b border-gray-800 sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16 items-center">
-                    <div className="flex items-center gap-2">
+                    <Link to="/" className="flex items-center gap-2">
                         <div className="bg-blue-600 p-2 rounded-lg">
                             <GraduationCap className="text-white" size={24} />
                         </div>
                         <span className="text-2xl font-black tracking-tighter text-white">Swift<span className="text-blue-500">Fix</span></span>
-                    </div>
+                    </Link>
                     {!isAdminRoute && (
                         <div className="flex space-x-2">
                             <Link to="/my-bookings" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
@@ -49,14 +57,19 @@ const Navigation = () => {
                             <Link to="/catalogue" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
                                 <Building2 size={18} /> Catalogue
                             </Link>
-                            <Link to="/tickets" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
-                                <AlertTriangle size={18} /> Tickets
-                            </Link>
-                            <Link to="/admin" className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all ml-4 border border-indigo-700 shadow-sm">
-                                <ShieldCheck size={18} /> Admin
+                            <Link to="/profile" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
+                                <User size={18} /> Profile
                             </Link>
                         </div>
                     )}
+                    <div className="flex space-x-2 ml-4">
+                        <button onClick={() => { 
+                            logout(); 
+                            window.location.href = '/'; 
+                        }} className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-red-400 hover:text-white hover:bg-red-500/20 transition-all">
+                            <LogOut size={18} /> Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -66,34 +79,30 @@ const Navigation = () => {
 const AppContent = () => {
     const location = useLocation();
     const isHome = location.pathname === '/';
+    const isAuth = location.pathname === '/auth';
 
     return (
-        <div className="min-h-screen bg-transparent font-sans text-gray-900">
+        <div className="min-h-screen flex flex-col bg-transparent font-sans text-gray-900">
             <Navigation />
-            <main>
+            <main className="flex-grow">
                 <Routes>
                     <Route path="/" element={<Home />} />
-                    
-                    {/* Booking Routes */}
+                    <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/oauth-callback" element={<OAuthCallback />} />
+                    <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
                     <Route path="/my-bookings" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><MyBookings /></div>} />
                     <Route path="/catalogue" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><StudentCatalogue /></div>} />
+                    <Route path="/student-catalogue" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><StudentCatalogue /></div>} />
                     <Route path="/book" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><CreateBooking /></div>} />
-                    
-                    {/* Ticket Routes */}
-                    <Route path="/tickets" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><UserTickets /></div>} />
-                    <Route path="/tickets/create" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><CreateTicket /></div>} />
-                    
-                    {/* Admin Routes */}
-                    <Route path="/admin" element={<AdminHub />} />
-                    <Route path="/admin/bookings" element={<AdminDashboard />} />
-                    <Route path="/admin/confirmed-bookings" element={<ConformBooking />} />
-                    <Route path="/admin/catalogue" element={<FacilitiesCatalogue />} />
-                    <Route path="/admin/feedback" element={<AdminFeedback />} />
-                    <Route path="/admin/tickets" element={<AdminTickets />} />
-                    <Route path="/admin/tickets/:id" element={<AdminTicketDetail />} />
+                    <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminHub /></ProtectedRoute>} />
+                    <Route path="/admin/bookings" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
+                    <Route path="/admin/confirmed-bookings" element={<ProtectedRoute requiredRole="ADMIN"><ConformBooking /></ProtectedRoute>} />
+                    <Route path="/admin/catalogue" element={<ProtectedRoute requiredRole="ADMIN"><FacilitiesCatalogue /></ProtectedRoute>} />
+                    <Route path="/admin/feedback" element={<ProtectedRoute requiredRole="ADMIN"><AdminFeedback /></ProtectedRoute>} />
+                    <Route path="/admin/users" element={<ProtectedRoute requiredRole="ADMIN"><UserManagement /></ProtectedRoute>} />
                 </Routes>
             </main>
-            {!isHome && (
+            {!isHome && !isAuth && (
                 <footer className="mt-auto py-8 text-center text-gray-500 text-xs border-t border-gray-800 bg-black">
                     <p className="mb-1">SwiftFix &bull; Smart Campus Operations Hub</p>
                     <p>&copy; 2026 SwiftFix. All rights reserved.</p>

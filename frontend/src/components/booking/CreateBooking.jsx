@@ -2,11 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { bookingService } from '../../services/api';
 import { Calendar, Clock, Users, FileText, Send } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const CreateBooking = () => {
+    const { user } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
     const resource = location.state?.selectedResource;
+
+    // Derive the current user ID for API calls
+    const currentUserId = (() => {
+        if (user?.userId) return user.userId;
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.sub;
+            }
+        } catch (e) { }
+        return null;
+    })();
 
     const [formData, setFormData] = useState({
         resourceId: resource?.id || '',
@@ -27,7 +42,7 @@ const CreateBooking = () => {
                 const response = await bookingService.getAllBookings();
                 const relevant = response.data.filter(b =>
                     b.resourceId === formData.resourceId &&
-                    (b.status === 'PENDING' || b.status === 'APPROVED')
+                    (b.status === 'PENDING' || b.status === 'CONFIRMED')
                 );
                 setExistingBookings(relevant);
             } catch (error) {
@@ -95,9 +110,13 @@ const CreateBooking = () => {
         setMessage({ type: '', text: '' });
 
         try {
+            if (!currentUserId) {
+                alert('User identity not found. Please log in again.');
+                return;
+            }
             await bookingService.createBooking({
                 ...formData,
-                userId: 'user123', // Hardcoded for demo
+                userId: currentUserId,
             });
             alert('Booking Requested Successfully');
             navigate('/my-bookings');

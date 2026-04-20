@@ -9,13 +9,27 @@ const api = axios.create({
     },
 });
 
+// Intercept requests to attach the JWT token
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 export const bookingService = {
     createBooking: (data) => api.post('', data),
     getUserBookings: (userId) => api.get(`/user?userId=${userId}`),
     getAllBookings: () => api.get(''),
-    approveBooking: (id) => api.put(`/${id}/approve`),
+    confirmBooking: (id) => api.put(`/${id}/confirm`),
     rejectBooking: (id, reason) => api.put(`/${id}/reject`, { reason }),
-    cancelBooking: (id) => api.put(`/${id}/cancel`),
+    cancelBooking: (id, reason) => api.put(`/${id}/cancel`, { reason }),
 };
 
 export default api;

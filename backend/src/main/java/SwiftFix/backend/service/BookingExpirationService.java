@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * Background service that automatically expires admin-confirmed (APPROVED) bookings
+ * Background service that automatically expires admin-confirmed (CONFIRMED) bookings
  * once the current date and time have passed the booking's end time.
  * Runs every minute. Expired bookings are NOT deleted — they remain in the
  * database for history, tracking, and reference.

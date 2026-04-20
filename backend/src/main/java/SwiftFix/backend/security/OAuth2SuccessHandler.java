@@ -1,0 +1,90 @@
+package SwiftFix.backend.security;
+
+import SwiftFix.backend.model.User;
+import SwiftFix.backend.repository.UserRepository;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@Component
+@RequiredArgsConstructor
+public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+    private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
+
+    @Value("${oauth2.frontend-url:http://localhost:5173}")
+    private String frontendUrl;
+
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
+            throws IOException, ServletException {
+
+        // Extract OAuth2User from authentication
+        OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
+
+        // Extract email and name from OAuth2User attributes
+        String email = oauth2User.getAttribute("email");
+        String name = oauth2User.getAttribute("name");
+
+        System.out.println("OAuth2 Success - Email: " + email + ", Name: " + name);
+        
+        User user;
+        if (email != null && !email.isEmpty()) {
+            // Check if user already exists
+            Optional<User> existingUser = userRepository.findByEmail(email);
+            
+            if (existingUser.isEmpty()) {
+                // Create new user if doesn't exist
+                User newUser = User.builder()
+                        .email(email)
+                        .fullName(name != null ? name : email.split("@")[0])
+                        .studentId("OAUTH2_" + System.currentTimeMillis())  // Generate a unique student ID
+                        .phoneNumber("")  // OAuth2 doesn't provide phone
+                        .address("")      // OAuth2 doesn't provide address
+                        .faculty("")      // OAuth2 doesn't provide faculty
+                        .password("")     // OAuth2 users don't have passwords
+                        .role("USER")
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
+                        .build();
+                
+                user = userRepository.save(newUser);
+                System.out.println("✅ New OAuth2 user created: " + email);
+            } else {
+                user = existingUser.get();
+                System.out.println("✅ Existing user found: " + email);
+            }
+            
+            // Generate JWT token
+            String token = jwtProvider.generateToken(user.getId(), user.getEmail(), user.getRole(), user.getFullName());
+            
+            // Build redirect URL
+            String redirectUrl = String.format("%s/oauth-callback?token=%s&userId=%d&role=%s&email=%s&fullName=%s",
+                    frontendUrl,
+                    token,
+                    user.getId(),
+                    user.getRole(),
+                    URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8),
+                    URLEncoder.encode(user.getFullName(), StandardCharsets.UTF_8));
+            
+            this.setDefaultTargetUrl(redirectUrl);
+            super.onAuthenticationSuccess(request, response, authentication);
+        } else {
+            // Handle error case
+            this.setDefaultTargetUrl(frontendUrl + "/auth?error=oauth2_email_missing");
+            super.onAuthenticationSuccess(request, response, authentication);
+        }
+    }
+}

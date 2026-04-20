@@ -11,7 +11,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookings")
-@CrossOrigin(origins = "http://localhost:5173") // Default Vite port
+@CrossOrigin(origins = "*")
 public class BookingController {
 
     @Autowired
@@ -32,8 +32,8 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getAllBookings());
     }
 
-    @PutMapping("/{id}/approve")
-    public ResponseEntity<Booking> approveBooking(@PathVariable Long id) {
+    @PutMapping("/{id}/confirm")
+    public ResponseEntity<Booking> confirmBooking(@PathVariable Long id) {
         return ResponseEntity.ok(bookingService.approveBooking(id));
     }
 
@@ -44,7 +44,8 @@ public class BookingController {
     }
 
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<Booking> cancelBooking(@PathVariable Long id) {
-        return ResponseEntity.ok(bookingService.cancelBooking(id));
+    public ResponseEntity<Booking> cancelBooking(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String reason = body.getOrDefault("reason", "No reason provided");
+        return ResponseEntity.ok(bookingService.cancelBooking(id, reason));
     }
 }

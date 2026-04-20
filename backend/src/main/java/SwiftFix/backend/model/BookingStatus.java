@@ -2,7 +2,7 @@ package SwiftFix.backend.model;
 
 public enum BookingStatus {
     PENDING,
-    APPROVED,
+    CONFIRMED,
     REJECTED,
     CANCELLED,
     EXPIRED
