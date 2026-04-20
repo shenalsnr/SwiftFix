@@ -568,7 +568,7 @@ const Home = () => {
           <p className="sf-fade sf-d3">
             SwiftFix is a purpose-built reservation platform for universities. Browse
             available facilities, submit booking requests, and receive instant
-            confirmations — all in one conflict-aware system.
+            confirmations.
           </p>
 
           <div className="sf-hero-btns sf-fade sf-d4">
