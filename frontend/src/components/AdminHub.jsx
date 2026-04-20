@@ -74,7 +74,7 @@ const AdminHub = () => {
                         <div className="flex items-center gap-2 mb-4">
                             <span className="px-3 py-1 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full">Admin Portal</span>
                             <span className="w-8 h-[1px] bg-gray-200"></span>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Version 2.4.0</span>
+                            
                         </div>
                         <h1 className="text-5xl font-black text-gray-900 tracking-tighter mb-4">
                             Operations <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500 text-bold">Control Center</span>

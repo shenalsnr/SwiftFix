@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, User, Phone, MapPin, Upload, GraduationCap } from 'lucide-react';
+import { Mail, Lock, User, Phone, MapPin, Upload, GraduationCap, Home } from 'lucide-react';
 import axiosInstance from '../../services/axiosConfig';
 
 const AuthPage = () => {
@@ -171,17 +171,19 @@ const AuthPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 flex flex-col">
+        <div className="min-h-screen bg-white flex flex-col relative overflow-hidden">
             {/* Header with SwiftFix Logo */}
-            <header className="border-b border-gray-700/50 backdrop-blur-xl bg-gray-900/30">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity w-fit">
-                        <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-lg">
-                            <GraduationCap className="text-white" size={28} />
+            <header className="border-b border-gray-800 bg-black">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                    <Link to="/" className="flex items-center gap-2">
+                        <div className="bg-blue-600 p-2 rounded-lg">
+                            <GraduationCap className="text-white" size={24} />
                         </div>
-                        <span className="text-2xl font-bold text-white">
-                            Swift<span className="text-blue-400">Fix</span>
-                        </span>
+                        <span className="text-2xl font-black tracking-tighter text-white">Swift<span className="text-blue-500">Fix</span></span>
+                    </Link>
+                    <Link to="/" className="flex items-center gap-2 px-4 py-2 bg-gray-900 border border-gray-800 rounded-xl text-gray-400 hover:text-white hover:bg-gray-800 transition-all text-xs font-black uppercase tracking-widest">
+                        <Home size={16} />
+                        Back to Home
                     </Link>
                 </div>
             </header>
@@ -197,13 +199,13 @@ const AuthPage = () => {
 
                 {/* Auth Card */}
                 <div className="relative w-full max-w-md">
-                    <div className="backdrop-blur-2xl bg-gradient-to-br from-gray-800/40 to-gray-900/40 border border-gray-700/30 rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="bg-white border border-gray-100 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] overflow-hidden">
                         {/* Card Header */}
-                        <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 px-8 py-6 border-b border-gray-700/30">
-                            <h2 className="text-2xl font-bold text-white text-center">
+                        <div className="px-8 py-8 border-b border-gray-50 bg-gray-50/30">
+                            <h2 className="text-3xl font-black text-gray-900 text-center tracking-tight">
                                 {isLogin ? 'Welcome Back' : 'Create Account'}
                             </h2>
-                            <p className="text-gray-400 text-center text-sm mt-1">
+                            <p className="text-gray-500 text-center text-sm font-medium mt-2">
                                 {isLogin ? 'Sign in to access your dashboard' : 'Join SwiftFix today'}
                             </p>
                         </div>
@@ -218,13 +220,13 @@ const AuthPage = () => {
 
                             {isLogin ? (
                                 // Login Form
-                                <form onSubmit={handleLogin} className="space-y-4">
+                                <form onSubmit={handleLogin} className="space-y-5">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                             Email or Student ID
                                         </label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-3 text-gray-500" size={20} />
+                                        <div className="relative group">
+                                            <Mail className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                                             <input
                                                 type="text"
                                                 value={loginForm.emailOrId}
@@ -232,18 +234,18 @@ const AuthPage = () => {
                                                     setLoginForm({ ...loginForm, emailOrId: e.target.value })
                                                 }
                                                 placeholder="your@email.com or IT12345678"
-                                                className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 focus:bg-white transition-all font-medium"
                                                 required
                                             />
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                             Password
                                         </label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-3 text-gray-500" size={20} />
+                                        <div className="relative group">
+                                            <Lock className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                                             <input
                                                 type="password"
                                                 value={loginForm.password}
@@ -251,7 +253,7 @@ const AuthPage = () => {
                                                     setLoginForm({ ...loginForm, password: e.target.value })
                                                 }
                                                 placeholder="••••••••"
-                                                className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 focus:bg-white transition-all font-medium"
                                                 required
                                             />
                                         </div>
@@ -260,20 +262,20 @@ const AuthPage = () => {
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition duration-200"
+                                        className="w-full mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-lg hover:shadow-blue-500/30 disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-all duration-300 transform active:scale-[0.98]"
                                     >
-                                        {loading ? 'Signing in...' : 'Sign In'}
+                                        {loading ? 'Signing in...' : 'Sign In to Dashboard'}
                                     </button>
                                 </form>
                             ) : (
                                 // Registration Form
                                 <form onSubmit={handleRegister} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                             Full Name
                                         </label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-3 text-gray-500" size={20} />
+                                        <div className="relative group">
+                                            <User className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                                             <input
                                                 type="text"
                                                 value={registerForm.fullName}
@@ -281,7 +283,7 @@ const AuthPage = () => {
                                                     setRegisterForm({ ...registerForm, fullName: e.target.value })
                                                 }
                                                 placeholder="John Doe"
-                                                className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 focus:bg-white transition-all font-medium"
                                                 required
                                             />
                                         </div>
@@ -289,7 +291,7 @@ const AuthPage = () => {
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                                 Student ID
                                             </label>
                                             <input
@@ -302,12 +304,12 @@ const AuthPage = () => {
                                                     })
                                                 }
                                                 placeholder="IT12345678"
-                                                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 focus:bg-white transition-all font-medium"
                                                 required
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                                 Email
                                             </label>
                                             <input
@@ -317,7 +319,7 @@ const AuthPage = () => {
                                                     setRegisterForm({ ...registerForm, email: e.target.value })
                                                 }
                                                 placeholder="user@email.com"
-                                                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 focus:bg-white transition-all font-medium"
                                                 required
                                             />
                                         </div>
@@ -325,11 +327,11 @@ const AuthPage = () => {
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                                 Phone
                                             </label>
-                                            <div className="relative">
-                                                <Phone className="absolute left-3 top-3 text-gray-500" size={20} />
+                                            <div className="relative group">
+                                                <Phone className="absolute left-4 top-3 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                                                 <input
                                                     type="tel"
                                                     value={registerForm.phoneNumber}
@@ -340,17 +342,17 @@ const AuthPage = () => {
                                                         })
                                                     }
                                                     placeholder="+1234567890"
-                                                    className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 focus:bg-white transition-all font-medium"
                                                     required
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                                 Address
                                             </label>
-                                            <div className="relative">
-                                                <MapPin className="absolute left-3 top-3 text-gray-500" size={20} />
+                                            <div className="relative group">
+                                                <MapPin className="absolute left-4 top-3 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                                                 <input
                                                     type="text"
                                                     value={registerForm.address}
@@ -361,7 +363,7 @@ const AuthPage = () => {
                                                         })
                                                     }
                                                     placeholder="123 Street"
-                                                    className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 focus:bg-white transition-all font-medium"
                                                     required
                                                 />
                                             </div>
@@ -369,7 +371,7 @@ const AuthPage = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                             Faculty
                                         </label>
                                         <select
@@ -377,21 +379,10 @@ const AuthPage = () => {
                                             onChange={(e) =>
                                                 setRegisterForm({ ...registerForm, faculty: e.target.value })
                                             }
-                                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                                            style={{
-                                                backgroundColor: '#1a1a2e',
-                                                color: 'white',
-                                            }}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-gray-700 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 focus:bg-white transition-all font-bold appearance-none cursor-pointer"
                                         >
                                             {faculties.map((faculty) => (
-                                                <option
-                                                    key={faculty}
-                                                    value={faculty}
-                                                    style={{
-                                                        backgroundColor: '#1a1a2e',
-                                                        color: 'white',
-                                                    }}
-                                                >
+                                                <option key={faculty} value={faculty}>
                                                     {faculty}
                                                 </option>
                                             ))}
@@ -399,14 +390,14 @@ const AuthPage = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                             Profile Photo
                                         </label>
-                                        <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-600/50 rounded-lg cursor-pointer hover:border-blue-500/50 transition">
-                                            <div className="flex items-center gap-2">
+                                        <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-100 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all duration-300">
+                                            <div className="flex items-center gap-3">
                                                 <Upload size={20} className="text-gray-400" />
-                                                <span className="text-sm text-gray-400">
-                                                    {profilePhotoName || 'Choose file'}
+                                                <span className="text-sm text-gray-400 font-bold">
+                                                    {profilePhotoName || 'Upload Student Image'}
                                                 </span>
                                             </div>
                                             <input
@@ -420,11 +411,11 @@ const AuthPage = () => {
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                                 Password
                                             </label>
-                                            <div className="relative">
-                                                <Lock className="absolute left-3 top-3 text-gray-500" size={20} />
+                                            <div className="relative group">
+                                                <Lock className="absolute left-4 top-3 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                                                 <input
                                                     type="password"
                                                     value={registerForm.password}
@@ -435,17 +426,17 @@ const AuthPage = () => {
                                                         })
                                                     }
                                                     placeholder="••••••••"
-                                                    className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 focus:bg-white transition-all font-medium"
                                                     required
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                                 Confirm Password
                                             </label>
-                                            <div className="relative">
-                                                <Lock className="absolute left-3 top-3 text-gray-500" size={20} />
+                                            <div className="relative group">
+                                                <Lock className="absolute left-4 top-3 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                                                 <input
                                                     type="password"
                                                     value={registerForm.confirmPassword}
@@ -456,7 +447,7 @@ const AuthPage = () => {
                                                         })
                                                     }
                                                     placeholder="••••••••"
-                                                    className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 focus:bg-white transition-all font-medium"
                                                     required
                                                 />
                                             </div>
@@ -466,27 +457,27 @@ const AuthPage = () => {
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition duration-200"
+                                        className="w-full mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-lg hover:shadow-blue-500/30 disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-all duration-300 transform active:scale-[0.98]"
                                     >
-                                        {loading ? 'Creating Account...' : 'Create Account'}
+                                        {loading ? 'Creating Account...' : 'Create Student Account'}
                                     </button>
                                 </form>
                             )}
 
                             {/* Divider */}
-                            <div className="my-6 flex items-center">
-                                <div className="flex-1 border-t border-gray-600/50"></div>
-                                <span className="px-3 text-sm text-gray-400">or</span>
-                                <div className="flex-1 border-t border-gray-600/50"></div>
+                            <div className="my-8 flex items-center">
+                                <div className="flex-1 border-t border-gray-100"></div>
+                                <span className="px-4 text-xs font-black uppercase tracking-widest text-gray-300">or</span>
+                                <div className="flex-1 border-t border-gray-100"></div>
                             </div>
 
                             {/* Google Auth Button */}
                             <button
                                 onClick={handleGoogleAuth}
-                                className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/50 hover:border-blue-400 rounded-lg text-white font-semibold transition duration-200 hover:shadow-lg hover:shadow-blue-500/20"
+                                className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-white border border-gray-100 hover:border-blue-500 hover:bg-blue-50 rounded-xl text-gray-700 font-bold transition-all duration-300 shadow-sm hover:shadow-md"
                             >
                                 <svg
-                                    className="w-5 h-5"
+                                    className="w-5 h-5 text-blue-600"
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
@@ -499,20 +490,20 @@ const AuthPage = () => {
                                         strokeLinecap="round"
                                     />
                                 </svg>
-                                Sign in with Google
+                                Continue with Student Google account
                             </button>
                         </div>
 
                         {/* Footer */}
-                        <div className="border-t border-gray-700/30 px-8 py-4 bg-gray-900/50">
-                            <p className="text-sm text-gray-400 text-center">
+                        <div className="border-t border-gray-50 px-8 py-6 bg-gray-50/50">
+                            <p className="text-sm text-gray-500 font-medium text-center">
                                 {isLogin ? "Don't have an account? " : 'Already have an account? '}
                                 <button
                                     onClick={() => {
                                         setIsLogin(!isLogin);
                                         setError('');
                                     }}
-                                    className="text-blue-400 hover:text-blue-300 font-semibold transition-colors"
+                                    className="text-blue-600 hover:text-blue-700 font-black transition-colors"
                                 >
                                     {isLogin ? 'Sign Up' : 'Sign In'}
                                 </button>

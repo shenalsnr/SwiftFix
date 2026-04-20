@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, GraduationCap, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, GraduationCap, ShieldCheck, Home } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const AdminLogin = () => {
@@ -37,60 +37,59 @@ const AdminLogin = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 flex flex-col">
+        <div className="min-h-screen bg-white flex flex-col relative overflow-hidden">
             {/* Header */}
-            <header className="border-b border-gray-700/50 backdrop-blur-xl bg-gray-900/30">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity w-fit">
-                        <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-lg">
-                            <GraduationCap className="text-white" size={28} />
+            <header className="border-b border-gray-800 bg-black">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                    <Link to="/" className="flex items-center gap-2">
+                        <div className="bg-blue-600 p-2 rounded-lg">
+                            <GraduationCap className="text-white" size={24} />
                         </div>
-                        <span className="text-2xl font-bold text-white">
-                            Swift<span className="text-blue-400">Fix</span>
-                        </span>
+                        <span className="text-2xl font-black tracking-tighter text-white">Swift<span className="text-blue-500">Fix</span></span>
+                    </Link>
+                    <Link to="/" className="flex items-center gap-2 px-4 py-2 bg-gray-900 border border-gray-800 rounded-xl text-gray-400 hover:text-white hover:bg-gray-800 transition-all text-xs font-black uppercase tracking-widest">
+                        <Home size={16} />
+                        Back to Home
                     </Link>
                 </div>
             </header>
 
             {/* Main Content */}
-            <div className="flex-1 flex items-center justify-center p-4">
+            <div className="flex-1 flex items-center justify-center p-4 py-12">
                 {/* Animated Background Elements */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute top-1/4 -left-40 w-96 h-96 bg-red-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-                    <div className="absolute top-1/3 -right-32 w-80 h-80 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+                    <div className="absolute top-1/4 -left-40 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+                    <div className="absolute top-1/3 -right-32 w-80 h-80 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
                 </div>
 
                 {/* Admin Auth Card */}
                 <div className="relative w-full max-w-md z-10">
-                    <div className="backdrop-blur-2xl bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-red-500/30 rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="bg-white border border-gray-100 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] overflow-hidden">
                          {/* Card Header */}
-                         <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 px-8 py-6 border-b border-gray-700/30 flex flex-col items-center">
-                            <div className="bg-red-500/20 p-3 rounded-full mb-3 border border-red-500/30">
-                                <ShieldCheck className="text-red-400" size={32} />
-                            </div>
-                            <h2 className="text-2xl font-bold text-white text-center">
+                         <div className="px-8 py-8 border-b border-gray-50 bg-gray-50/30">
+                            <h2 className="text-3xl font-black text-gray-900 text-center tracking-tight">
                                 Admin Portal
                             </h2>
-                            <p className="text-gray-400 text-center text-sm mt-1">
-                                Secure access for administrators only
+                            <p className="text-gray-500 text-center text-sm font-medium mt-2">
+                                Secure access for system administrators
                             </p>
                         </div>
 
                         {/* Form Content */}
                         <div className="p-8">
                             {error && (
-                                <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
+                                <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm font-bold animate-shake">
                                     {error}
                                 </div>
                             )}
 
                             <form onSubmit={handleLogin} className="space-y-5">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                         Admin ID / Email
                                     </label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-3.5 text-gray-500" size={20} />
+                                    <div className="relative group">
+                                        <Mail className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                                         <input
                                             type="text"
                                             value={loginForm.emailOrId}
@@ -98,18 +97,18 @@ const AdminLogin = () => {
                                                 setLoginForm({ ...loginForm, emailOrId: e.target.value })
                                             }
                                             placeholder="admin@swiftfix.com"
-                                            className="w-full pl-10 pr-4 py-3 bg-gray-800/80 border border-gray-600/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                                            className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 focus:bg-white transition-all font-medium"
                                             required
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
                                         Password
                                     </label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-3 top-3.5 text-gray-500" size={20} />
+                                    <div className="relative group">
+                                        <Lock className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
                                         <input
                                             type="password"
                                             value={loginForm.password}
@@ -117,7 +116,7 @@ const AdminLogin = () => {
                                                 setLoginForm({ ...loginForm, password: e.target.value })
                                             }
                                             placeholder="••••••••"
-                                            className="w-full pl-10 pr-4 py-3 bg-gray-800/80 border border-gray-600/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                                            className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 focus:bg-white transition-all font-medium"
                                             required
                                         />
                                     </div>
@@ -126,11 +125,18 @@ const AdminLogin = () => {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full mt-8 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition duration-200 shadow-lg shadow-red-500/20"
+                                    className="w-full mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-lg hover:shadow-blue-500/30 disabled:opacity-50 text-white font-black py-4 rounded-xl transition-all duration-300 transform active:scale-[0.98]"
                                 >
-                                    {loading ? 'Authenticating...' : 'Access Admin Portal'}
+                                    {loading ? 'Verifying...' : 'Sign In to Admin Portal'}
                                 </button>
                             </form>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="border-t border-gray-50 px-8 py-6 bg-gray-50/50">
+                            <p className="text-xs text-center text-gray-400 font-bold uppercase tracking-widest">
+                                SwiftFix Security Protocol Active
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -144,6 +150,13 @@ const AdminLogin = () => {
                 }
                 .animate-blob { animation: blob 7s infinite; }
                 .animation-delay-2000 { animation-delay: 2s; }
+                
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-5px); }
+                    75% { transform: translateX(5px); }
+                }
+                .animate-shake { animation: shake 0.2s ease-in-out 0s 2; }
             `}</style>
         </div>
     );
