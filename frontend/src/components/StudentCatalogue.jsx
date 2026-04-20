@@ -7,7 +7,7 @@ import {
     Search, CalendarDays, BookOpen,
     LogOut, GraduationCap,
     Activity, CheckCircle, AlertTriangle, CalendarCheck,
-    MapPin, Users, Info
+    MapPin, Users, Info, User
 } from 'lucide-react';
 
 // --- Sub-components definition ---
@@ -118,8 +118,8 @@ const StudentCatalogue = () => {
         <div className="max-w-[1120px] mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
 
             {/* Welcome Section mimicking sf-section-center */}
-            <div className="flex flex-col gap-4 text-center md:text-left mb-4">
-                <div>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-4">
+                <div className="flex-1">
                     <span className="inline-flex items-center gap-2 bg-[#eff6ff] border border-blue-200/50 rounded-full px-4 py-1.5 text-[0.7rem] font-bold tracking-[0.12em] uppercase text-[#2563eb] mb-4">
                         <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                         Student Dashboard
@@ -130,6 +130,16 @@ const StudentCatalogue = () => {
                     <p className="text-[1.05rem] text-[#64748b] leading-relaxed max-w-[520px]">
                         Browse available facilities, easily submit your booking requests, and instantly manage your campus reservations.
                     </p>
+                </div>
+                
+                <div className="flex shrink-0">
+                    <button 
+                        onClick={() => navigate('/profile')}
+                        className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 font-bold hover:bg-slate-50 hover:border-blue-300 hover:text-blue-600 transition-all shadow-sm group"
+                    >
+                        <User size={18} className="text-slate-400 group-hover:text-blue-500 transition-colors" />
+                        My Profile
+                    </button>
                 </div>
             </div>
 
