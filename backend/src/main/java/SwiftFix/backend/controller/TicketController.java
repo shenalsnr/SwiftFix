@@ -2,7 +2,6 @@ package SwiftFix.backend.controller;
 
 import SwiftFix.backend.dto.ticket.*;
 import SwiftFix.backend.service.TicketService;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +25,7 @@ public class TicketController {
 
     /** POST — create ticket (201 Created). */
     @PostMapping
-    public ResponseEntity<TicketResponse> create(@Valid @RequestBody TicketCreateRequest request) {
+    public ResponseEntity<TicketResponse> create(@RequestBody TicketCreateRequest request) {
         TicketResponse created = ticketService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -60,7 +59,7 @@ public class TicketController {
     @PutMapping("/{id}")
     public ResponseEntity<TicketResponse> updateStatus(
             @PathVariable Long id,
-            @Valid @RequestBody TicketStatusUpdateRequest body) {
+            @RequestBody TicketStatusUpdateRequest body) {
         return ResponseEntity.ok(ticketService.updateStatus(id, body));
     }
 
@@ -68,7 +67,7 @@ public class TicketController {
     @PutMapping("/{id}/assign")
     public ResponseEntity<TicketResponse> assign(
             @PathVariable Long id,
-            @Valid @RequestBody TicketAssignRequest body) {
+            @RequestBody TicketAssignRequest body) {
         return ResponseEntity.ok(ticketService.assignTechnician(id, body));
     }
 
@@ -76,7 +75,7 @@ public class TicketController {
     @PatchMapping("/{id}/resolution")
     public ResponseEntity<TicketResponse> patchResolution(
             @PathVariable Long id,
-            @Valid @RequestBody TicketResolutionPatchRequest body) {
+            @RequestBody TicketResolutionPatchRequest body) {
         return ResponseEntity.ok(ticketService.addResolutionNotes(id, body));
     }
 

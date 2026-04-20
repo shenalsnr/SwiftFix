@@ -1,8 +1,6 @@
 package SwiftFix.backend.dto.ticket;
 
 import SwiftFix.backend.enums.TicketStatus;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 /**
  * Body for PUT /api/tickets/{id} — change workflow status.
@@ -10,10 +8,8 @@ import jakarta.validation.constraints.Size;
  */
 public class TicketStatusUpdateRequest {
 
-    @NotNull(message = "status is required")
     private TicketStatus status;
 
-    @Size(max = 1000)
     private String rejectionReason;
 
     public TicketStatus getStatus() {

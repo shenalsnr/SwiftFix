@@ -2,9 +2,6 @@ package SwiftFix.backend.dto.ticket;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 /**
  * Create ticket payload. Faculty / request-type fields removed per product requirements.
@@ -13,50 +10,29 @@ import jakarta.validation.constraints.Size;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TicketCreateRequest {
 
-    @NotBlank(message = "Name is required")
-    @Size(max = 120)
     private String name;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email must be valid")
-    @Size(max = 160)
     private String email;
 
-    @NotBlank(message = "Registration number is required")
-    @Size(max = 64)
     private String regNo;
 
-    @NotBlank(message = "Contact number is required")
-    @Size(max = 32)
     private String contactNo;
 
-    @NotBlank(message = "Request title is required")
-    @Size(max = 120)
     @JsonAlias("department")
     private String requestTitle;
 
-    @NotBlank(message = "Subject is required")
-    @Size(max = 200)
     private String subject;
 
-    @NotBlank(message = "Campus is required")
-    @Size(max = 120)
     private String campus;
 
-    @NotBlank(message = "Description is required")
-    @Size(max = 4000)
     private String message;
 
-    @Size(max = 16)
     private String priority;
 
-    @NotBlank(message = "User id is required")
-    @Size(max = 64)
     private String userId;
 
     private Long resourceId;
 
-    @Size(max = 200)
     private String location;
 
     public String getName() {
