@@ -106,6 +106,9 @@ public class UserService {
         if (request.getProfilePhotoPath() != null) {
             user.setProfilePhotoPath(request.getProfilePhotoPath());
         }
+        if (request.getStudentId() != null && user.getStudentId() != null && user.getStudentId().startsWith("OAUTH2_")) {
+            user.setStudentId(request.getStudentId());
+        }
 
         User updatedUser = userRepository.save(user);
 

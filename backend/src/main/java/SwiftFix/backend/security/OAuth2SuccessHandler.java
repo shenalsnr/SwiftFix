@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -39,6 +40,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         System.out.println("OAuth2 Success - Email: " + email + ", Name: " + name);
         
+        User user;
         if (email != null && !email.isEmpty()) {
             // Check if user already exists
             Optional<User> existingUser = userRepository.findByEmail(email);
@@ -58,15 +60,31 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                         .updatedAt(LocalDateTime.now())
                         .build();
                 
-                userRepository.save(newUser);
+                user = userRepository.save(newUser);
                 System.out.println("✅ New OAuth2 user created: " + email);
             } else {
+                user = existingUser.get();
                 System.out.println("✅ Existing user found: " + email);
             }
+            
+            // Generate JWT token
+            String token = jwtProvider.generateToken(user.getId(), user.getEmail(), user.getRole(), user.getFullName());
+            
+            // Build redirect URL
+            String redirectUrl = String.format("%s/oauth-callback?token=%s&userId=%d&role=%s&email=%s&fullName=%s",
+                    frontendUrl,
+                    token,
+                    user.getId(),
+                    user.getRole(),
+                    URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8),
+                    URLEncoder.encode(user.getFullName(), StandardCharsets.UTF_8));
+            
+            this.setDefaultTargetUrl(redirectUrl);
+            super.onAuthenticationSuccess(request, response, authentication);
+        } else {
+            // Handle error case
+            this.setDefaultTargetUrl(frontendUrl + "/auth?error=oauth2_email_missing");
+            super.onAuthenticationSuccess(request, response, authentication);
         }
-        
-        // Redirect to frontend student catalogue
-        this.setDefaultTargetUrl(redirectUrl);
-        super.onAuthenticationSuccess(request, response, authentication);
     }
 }

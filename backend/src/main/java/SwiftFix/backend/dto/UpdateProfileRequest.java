@@ -9,6 +9,7 @@ import lombok.*;
 public class UpdateProfileRequest {
     // User details
     private String fullName;
+    private String studentId;
     private String phoneNumber;
     private String address;
     private String faculty;
