@@ -10,10 +10,12 @@ import AdminHub from './components/AdminHub';
 import FacilitiesCatalogue from './components/FacilitiesCatalogue';
 import StudentCatalogue from './components/StudentCatalogue';
 import AdminFeedback from './components/AdminFeedback';
-import { UserCheck, ShieldCheck, GraduationCap, Building2 } from 'lucide-react';
+import { UserCheck, ShieldCheck, GraduationCap, Building2, LogOut } from 'lucide-react';
+import { useAuth } from './context/AuthContext';
 
 const Navigation = () => {
     const location = useLocation();
+    const { logout } = useAuth();
     const isAdminRoute = location.pathname.startsWith('/admin');
     const isHome = location.pathname === '/';
     const isAuth = location.pathname === '/auth';
@@ -40,6 +42,11 @@ const Navigation = () => {
                             </Link>
                         </div>
                     )}
+                    <div className="flex space-x-2 ml-4">
+                        <button onClick={() => { logout(); window.location.href = '/'; }} className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-red-400 hover:text-white hover:bg-red-500/20 transition-all">
+                            <LogOut size={18} /> Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>
