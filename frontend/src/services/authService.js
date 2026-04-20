@@ -23,6 +23,7 @@ api.interceptors.request.use((config) => {
 export const authService = {
     register: (data) => api.post('/auth/register', data),
     login: (data) => api.post('/auth/login', data),
+    adminLogin: (data) => api.post('/auth/admin-login', data),
 };
 
 export const userService = {

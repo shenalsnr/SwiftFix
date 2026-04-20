@@ -16,10 +16,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
+import SwiftFix.backend.repository.AdminRepository;
+import SwiftFix.backend.model.Admin;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
+    private final AdminRepository adminRepository;
     private final JwtProvider jwtProvider;
     private final BCryptPasswordEncoder passwordEncoder;
     private static final String UPLOAD_DIR = "uploads/profiles/";
@@ -105,6 +109,21 @@ public class AuthService {
 
         return new AuthResponse(token, user.getRole(), 
                                user.getId(), user.getEmail(), user.getFullName());
+    }
+
+    public AuthResponse adminLogin(LoginRequest request) {
+        Admin admin = adminRepository.findByEmail(request.getEmailOrId())
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
+
+        if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
+            throw new IllegalArgumentException("Invalid credentials");
+        }
+
+        String token = jwtProvider.generateToken(admin.getId(), admin.getEmail(),
+                admin.getRole(), "Administrator");
+
+        return new AuthResponse(token, admin.getRole(),
+                admin.getId(), admin.getEmail(), "Administrator");
     }
 
     private String saveProfilePhoto(MultipartFile file) throws IOException {

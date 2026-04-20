@@ -48,6 +48,29 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const adminLogin = async (emailOrId, password) => {
+        try {
+            const response = await authService.adminLogin({ emailOrId, password });
+            const { token, role, userId, email, fullName } = response.data;
+
+            // Store in localStorage
+            localStorage.setItem('token', token);
+            localStorage.setItem('role', role);
+            localStorage.setItem('user', JSON.stringify({ userId, email, fullName }));
+
+            // Update state
+            setToken(token);
+            setRole(role);
+            setUser({ userId, email, fullName });
+            setIsAuthenticated(true);
+
+            return response.data;
+        } catch (error) {
+            console.error('Admin Login failed:', error);
+            throw error;
+        }
+    };
+
     const register = async (userData) => {
         try {
             const response = await authService.register(userData);
@@ -90,6 +113,7 @@ export const AuthProvider = ({ children }) => {
                 role,
                 loading,
                 login,
+                adminLogin,
                 register,
                 logout,
             }}

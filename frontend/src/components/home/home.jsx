@@ -16,12 +16,12 @@ const STYLES = `
     height: 64px;
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 5%;
-    transition: background 0.35s ease, box-shadow 0.35s ease;
-  }
-  .sf-nav.scrolled {
     background: rgba(8, 15, 35, 0.92);
     backdrop-filter: blur(14px);
     box-shadow: 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .sf-nav.scrolled {
+    /* Kept for react state compatibility, but visual is now default */
   }
   .sf-nav-logo {
     display: flex; align-items: center; gap: 10px;

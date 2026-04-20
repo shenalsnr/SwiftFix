@@ -124,6 +124,37 @@ public class AuthController {
     }
 
     /**
+     * Admin Login endpoint - specifically checks for ADMIN role
+     */
+    @PostMapping("/admin-login")
+    public ResponseEntity<?> adminLogin(@RequestBody LoginRequest request) {
+        System.out.println("=== ADMIN LOGIN REQUEST ===");
+        System.out.println("Email or ID: " + request.getEmailOrId());
+        
+        try {
+            AuthResponse response = authService.adminLogin(request);
+            
+            System.out.println("✅ Admin Login successful for: " + request.getEmailOrId());
+            return ResponseEntity.ok(response);
+            
+        } catch (IllegalArgumentException e) {
+            System.err.println("Validation Error during admin login: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("error", "INVALID_CREDENTIALS");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            
+        } catch (Exception e) {
+            System.err.println("Error during admin login: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Invalid email/ID or password");
+            errorResponse.put("error", "AUTHENTICATION_FAILED");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+        }
+    }
+
+    /**
      * ✅ SIMPLIFIED TEST ENDPOINT - No file upload, just JSON
      * Used to verify database connection and basic registration without file complexity
      */
