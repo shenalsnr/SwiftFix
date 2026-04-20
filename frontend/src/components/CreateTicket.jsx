@@ -8,6 +8,8 @@ import {
   ArrowLeft,
   Ticket,
   X,
+  Building2,
+  ShieldAlert,
 } from "lucide-react";
 
 const REQUEST_TITLES = [
@@ -54,7 +56,15 @@ export default function CreateTicket() {
   const [submitting, setSubmitting] = useState(false);
 
   const inputClass =
-    "w-full mt-1.5 px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500";
+    "w-full mt-1.5 px-4 py-3 rounded-2xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition";
+
+  const getErrorMessage = (err) => {
+    const data = err?.response?.data;
+    if (data?.errors) {
+      return Object.values(data.errors).join("\n");
+    }
+    return data?.message || err.message || "Could not submit ticket";
+  };
 
   const handleChange = (e) => {
     setForm((prev) => ({
@@ -71,14 +81,6 @@ export default function CreateTicket() {
 
   const removeFile = (index) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const getErrorMessage = (err) => {
-    const data = err?.response?.data;
-    if (data?.errors) {
-      return Object.values(data.errors).join("\n");
-    }
-    return data?.message || err.message || "Could not submit ticket";
   };
 
   const handleSubmit = async (e) => {
@@ -109,33 +111,65 @@ export default function CreateTicket() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="mb-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+      <div className="rounded-[2rem] overflow-hidden bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 text-white shadow-2xl">
+        <div className="px-8 py-10 md:px-10 md:py-12 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 border border-white/20 text-sm font-semibold mb-5">
+              <Ticket size={16} />
+              SwiftFix Ticket System
+            </div>
+            <h1 className="text-3xl md:text-5xl font-black leading-tight">
+              Submit a maintenance or support request
+            </h1>
+            <p className="mt-4 text-white/90 text-base md:text-lg leading-7 max-w-2xl">
+              Report campus issues quickly with clear details, priority level, and image
+              evidence so the admin team can take action faster.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4 w-full lg:max-w-xl">
+            <div className="rounded-3xl bg-white/10 border border-white/15 p-5 backdrop-blur-sm">
+              <p className="text-sm text-white/80">Workflow</p>
+              <p className="text-xl font-black mt-1">OPEN → RESOLVED</p>
+            </div>
+            <div className="rounded-3xl bg-white/10 border border-white/15 p-5 backdrop-blur-sm">
+              <p className="text-sm text-white/80">Attachments</p>
+              <p className="text-xl font-black mt-1">Up to 3 images</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
         <Link
           to="/tickets"
-          className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-indigo-600 transition"
         >
           <ArrowLeft size={18} />
           Back to my tickets
         </Link>
       </div>
 
-      <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-8">
-        <div className="rounded-3xl bg-white shadow-xl border border-slate-200 p-8">
-          <div className="flex items-start gap-4 mb-6">
-            <div className="bg-indigo-100 text-indigo-700 p-3 rounded-2xl">
+      <div className="grid xl:grid-cols-[1.25fr_0.75fr] gap-8">
+        <div className="rounded-[2rem] bg-white border border-slate-200 shadow-xl p-6 md:p-8">
+          <div className="flex items-start gap-4 mb-8">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
               <Ticket size={28} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-indigo-600">SwiftFix · Maintenance</p>
-              <h1 className="text-3xl font-black text-slate-900">Submit a support request</h1>
+              <p className="text-sm font-semibold text-indigo-600">Ticket Form</p>
+              <h2 className="text-2xl md:text-3xl font-black text-slate-900">
+                Create a new ticket
+              </h2>
               <p className="text-slate-500 mt-2">
-                Fill the form carefully and upload up to 3 image attachments.
+                Fill all required details carefully to help the team resolve your issue
+                faster.
               </p>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <label className="text-sm font-semibold text-slate-700">Full name *</label>
@@ -161,7 +195,9 @@ export default function CreateTicket() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-slate-700">Registration number *</label>
+                <label className="text-sm font-semibold text-slate-700">
+                  Registration number *
+                </label>
                 <input
                   className={inputClass}
                   name="regNo"
@@ -235,7 +271,7 @@ export default function CreateTicket() {
                 </select>
               </div>
 
-              <div className="md:col-span-1">
+              <div>
                 <label className="text-sm font-semibold text-slate-700">Subject *</label>
                 <input
                   className={inputClass}
@@ -248,22 +284,25 @@ export default function CreateTicket() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-slate-700">Message *</label>
+              <label className="text-sm font-semibold text-slate-700">Description *</label>
               <textarea
-                className={`${inputClass} min-h-[150px] resize-y`}
+                className={`${inputClass} min-h-[180px] resize-y`}
                 name="message"
                 value={form.message}
                 onChange={handleChange}
                 required
+                placeholder="Describe the issue clearly. Include room, lab, equipment name, or exact location if possible."
               />
             </div>
 
-            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <UploadCloud className="text-slate-500" size={24} />
+            <div className="rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-600">
+                  <UploadCloud size={22} />
+                </div>
                 <div>
-                  <p className="font-semibold text-slate-800">Attachments</p>
-                  <p className="text-sm text-slate-500">Up to 3 images, 5MB each</p>
+                  <p className="font-bold text-slate-800">Attachments</p>
+                  <p className="text-sm text-slate-500">Upload up to 3 image files, 5MB each</p>
                 </div>
               </div>
 
@@ -276,22 +315,23 @@ export default function CreateTicket() {
               />
 
               {files.length > 0 && (
-                <div className="mt-4 space-y-2">
+                <div className="mt-4 grid gap-3">
                   {files.map((file, index) => (
                     <div
                       key={`${file.name}-${index}`}
-                      className="flex items-center justify-between gap-3 rounded-xl bg-white border border-slate-200 px-4 py-3"
+                      className="flex items-center justify-between gap-3 rounded-2xl bg-white border border-slate-200 px-4 py-3"
                     >
                       <div className="min-w-0">
-                        <p className="font-medium text-slate-800 truncate">{file.name}</p>
+                        <p className="font-semibold text-slate-800 truncate">{file.name}</p>
                         <p className="text-xs text-slate-500">
                           {(file.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
+
                       <button
                         type="button"
                         onClick={() => removeFile(index)}
-                        className="text-red-500 hover:text-red-700"
+                        className="w-9 h-9 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-50 hover:text-red-700 transition"
                       >
                         <X size={18} />
                       </button>
@@ -304,7 +344,7 @@ export default function CreateTicket() {
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold px-6 py-3 shadow-lg"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-bold px-7 py-3.5 shadow-lg shadow-indigo-600/20 transition"
             >
               <Send size={18} />
               {submitting ? "Submitting..." : "Submit ticket"}
@@ -313,23 +353,61 @@ export default function CreateTicket() {
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-3xl bg-slate-950 text-white p-8 shadow-xl">
+          <div className="rounded-[2rem] bg-white border border-slate-200 shadow-xl p-6">
             <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle className="text-amber-400" size={24} />
-              <h2 className="text-xl font-black">Helpful tips</h2>
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <AlertTriangle size={22} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900">Helpful tips</h3>
+                <p className="text-sm text-slate-500">Send better tickets, get faster action</p>
+              </div>
             </div>
-            <ul className="space-y-3 text-sm text-slate-300">
-              <li>Use a clear subject line.</li>
-              <li>Add screenshots when the issue is visible.</li>
-              <li>Include exact room, lab, or equipment details.</li>
-              <li>Technical Support tickets usually need technician assignment.</li>
+
+            <ul className="space-y-3 text-sm text-slate-600 leading-6">
+              <li>Use a short, clear subject line.</li>
+              <li>Add screenshots if the issue is visible on screen.</li>
+              <li>Mention the exact room, lab, or equipment name.</li>
+              <li>Choose the correct priority level.</li>
             </ul>
           </div>
 
-          <div className="rounded-3xl bg-white border border-slate-200 p-8 shadow-lg">
-            <h3 className="text-lg font-black text-slate-900">Current user</h3>
-            <p className="text-slate-600 mt-2">User ID: {currentUser.id}</p>
-            <p className="text-slate-600">Role: {currentUser.role}</p>
+          <div className="rounded-[2rem] bg-slate-950 text-white shadow-xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
+                <Building2 size={22} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black">Campus support flow</h3>
+                <p className="text-sm text-slate-400">How the team handles tickets</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 text-sm text-slate-300">
+              <div className="rounded-2xl bg-white/5 border border-white/10 p-4">1. Ticket submitted</div>
+              <div className="rounded-2xl bg-white/5 border border-white/10 p-4">2. Admin review</div>
+              <div className="rounded-2xl bg-white/5 border border-white/10 p-4">3. Technician assignment</div>
+              <div className="rounded-2xl bg-white/5 border border-white/10 p-4">4. Resolution and closure</div>
+            </div>
+          </div>
+
+          <div className="rounded-[2rem] bg-white border border-slate-200 shadow-xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                <ShieldAlert size={22} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900">Current user</h3>
+                <p className="text-sm text-slate-500">Linked identity used for this ticket</p>
+              </div>
+            </div>
+
+            <p className="text-slate-700">
+              <span className="font-semibold">User ID:</span> {currentUser.id}
+            </p>
+            <p className="text-slate-700 mt-1">
+              <span className="font-semibold">Role:</span> {currentUser.role}
+            </p>
           </div>
         </div>
       </div>

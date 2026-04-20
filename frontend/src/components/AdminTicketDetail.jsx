@@ -19,6 +19,9 @@ import {
   Paperclip,
   Trash2,
   Pencil,
+  Ticket,
+  ShieldCheck,
+  Wrench,
 } from "lucide-react";
 
 const getAdminUser = () => {
@@ -49,9 +52,8 @@ export default function AdminTicketDetail() {
   const [commentDraft, setCommentDraft] = useState("");
   const [editingComment, setEditingComment] = useState({});
 
-  const getErrorMessage = (err, fallback) => {
-    return err?.response?.data?.message || err?.message || fallback;
-  };
+  const getErrorMessage = (err, fallback) =>
+    err?.response?.data?.message || err?.message || fallback;
 
   const loadTicket = async () => {
     setLoading(true);
@@ -175,12 +177,7 @@ export default function AdminTicketDetail() {
     if (!ticket) return;
 
     try {
-      const updated = await deleteComment(
-        ticket.id,
-        commentId,
-        adminUser.id,
-        adminUser.role
-      );
+      const updated = await deleteComment(ticket.id, commentId, adminUser.id, adminUser.role);
       setTicket(updated);
     } catch (err) {
       alert(getErrorMessage(err, "Failed to delete comment"));
@@ -188,15 +185,14 @@ export default function AdminTicketDetail() {
   };
 
   if (loading) {
-    return <div className="text-center py-12 text-slate-600">Loading ticket...</div>;
+    return <div className="text-center py-14 text-slate-600 font-medium">Loading ticket...</div>;
   }
 
   if (!ticket) {
-    return <div className="text-center py-12 text-slate-600">Ticket not found</div>;
+    return <div className="text-center py-14 text-slate-600 font-medium">Ticket not found</div>;
   }
 
   const isOpen = ticket.status === "OPEN";
-  const isInProgress = ticket.status === "IN_PROGRESS";
   const isResolved = ticket.status === "RESOLVED";
   const isClosed = ticket.status === "CLOSED";
   const isRejected = ticket.status === "REJECTED";
@@ -206,318 +202,373 @@ export default function AdminTicketDetail() {
   const resolveDisabled = isResolved || isClosed || isRejected;
   const closeDisabled = !isResolved;
   const rejectDisabled = isClosed || isRejected;
-
   const assignDisabled = isClosed || isRejected || !technicianId.trim();
   const resolutionDisabled = isClosed || isRejected || !resolutionNotes.trim();
 
   const buttonBase =
-    "rounded-2xl text-white font-bold px-4 py-3 transition inline-flex items-center justify-center gap-2";
+    "rounded-2xl text-white font-bold px-4 py-3.5 transition inline-flex items-center justify-center gap-2";
   const disabledClass = "bg-slate-300 cursor-not-allowed";
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
       <div>
         <Link
           to="/admin/tickets"
-          className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-indigo-600 transition"
         >
           <ArrowLeft size={18} />
           Back to all tickets
         </Link>
       </div>
 
-      <div className="rounded-3xl bg-white border border-slate-200 shadow-lg p-8">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+      <div className="rounded-[2rem] overflow-hidden bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-900 text-white shadow-2xl">
+        <div className="px-8 py-10 md:px-10 md:py-12 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-8">
           <div>
-            <div className="flex flex-wrap items-center gap-3 mb-3">
-              <span className="text-xs font-bold text-slate-500">#{ticket.id}</span>
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-white/90 bg-white/10 px-3 py-1 rounded-full border border-white/10">
+                <Ticket size={13} />
+                #{ticket.id}
+              </span>
               <span
                 className={`inline-flex px-3 py-1 rounded-full border text-xs font-bold ${
-                  badgeMap[ticket.status] || "bg-slate-100 text-slate-700 border-slate-200"
+                  badgeMap[ticket.status] || "bg-white/10 text-white border-white/10"
                 }`}
               >
                 {ticket.status.replaceAll("_", " ")}
               </span>
-              <span className="rounded-full bg-slate-100 text-slate-700 px-3 py-1 text-xs font-bold border border-slate-200">
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-white/90 bg-white/10 px-3 py-1 rounded-full border border-white/10">
                 {ticket.priority}
               </span>
             </div>
 
-            <h1 className="text-3xl font-black text-slate-900">{ticket.subject}</h1>
-            <p className="text-slate-600 mt-3">{ticket.description}</p>
+            <h1 className="text-3xl md:text-5xl font-black">{ticket.subject}</h1>
+            <p className="text-slate-300 mt-4 max-w-3xl leading-7">{ticket.description}</p>
+          </div>
 
-            <div className="grid md:grid-cols-2 gap-4 mt-6 text-sm">
-              <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-                <p className="font-semibold text-slate-800">Reporter</p>
-                <p className="text-slate-600 mt-1">{ticket.reporterName}</p>
-                <p className="text-slate-500">{ticket.reporterEmail}</p>
-              </div>
-
-              <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-                <p className="font-semibold text-slate-800">Request info</p>
-                <p className="text-slate-600 mt-1">{ticket.requestTitle}</p>
-                <p className="text-slate-500">{ticket.campus}</p>
-              </div>
-
-              <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-                <p className="font-semibold text-slate-800">Contact</p>
-                <p className="text-slate-600 mt-1">{ticket.contactNo}</p>
-                <p className="text-slate-500">{ticket.regNo}</p>
-              </div>
-
-              <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-                <p className="font-semibold text-slate-800">Technician</p>
-                <p className="text-slate-600 mt-1">{ticket.technicianId || "Not assigned"}</p>
-              </div>
+          <div className="grid sm:grid-cols-2 gap-4 w-full xl:max-w-xl">
+            <div className="rounded-3xl bg-white/10 border border-white/10 p-5">
+              <p className="text-sm text-slate-300">Reporter</p>
+              <p className="text-xl font-black mt-1">{ticket.reporterName}</p>
+            </div>
+            <div className="rounded-3xl bg-white/10 border border-white/10 p-5">
+              <p className="text-sm text-slate-300">Technician</p>
+              <p className="text-xl font-black mt-1">{ticket.technicianId || "Not assigned"}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {ticket.attachments?.length > 0 && (
-        <div className="rounded-3xl bg-white border border-slate-200 shadow-lg p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Paperclip size={18} className="text-slate-600" />
-            <h2 className="text-xl font-black text-slate-900">Attachments</h2>
+      <div className="grid xl:grid-cols-[1.15fr_0.85fr] gap-8">
+        <div className="space-y-8">
+          <div className="rounded-[2rem] bg-white border border-slate-200 shadow-xl p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <ShieldCheck size={22} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-black text-slate-900">Ticket details</h2>
+                <p className="text-sm text-slate-500">Core information provided by the reporter</p>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="rounded-3xl bg-slate-50 border border-slate-200 p-5">
+                <p className="text-sm font-semibold text-slate-500">Reporter</p>
+                <p className="text-slate-900 font-bold mt-2">{ticket.reporterName}</p>
+                <p className="text-sm text-slate-500 mt-1">{ticket.reporterEmail}</p>
+              </div>
+
+              <div className="rounded-3xl bg-slate-50 border border-slate-200 p-5">
+                <p className="text-sm font-semibold text-slate-500">Request info</p>
+                <p className="text-slate-900 font-bold mt-2">{ticket.requestTitle}</p>
+                <p className="text-sm text-slate-500 mt-1">{ticket.campus}</p>
+              </div>
+
+              <div className="rounded-3xl bg-slate-50 border border-slate-200 p-5">
+                <p className="text-sm font-semibold text-slate-500">Contact</p>
+                <p className="text-slate-900 font-bold mt-2">{ticket.contactNo}</p>
+                <p className="text-sm text-slate-500 mt-1">{ticket.regNo}</p>
+              </div>
+
+              <div className="rounded-3xl bg-slate-50 border border-slate-200 p-5">
+                <p className="text-sm font-semibold text-slate-500">Technician</p>
+                <p className="text-slate-900 font-bold mt-2">
+                  {ticket.technicianId || "Not assigned"}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            {ticket.attachments.map((attachment) => (
-              <a
-                key={attachment.id}
-                href={toAbsoluteFileUrl(attachment.fileUrl)}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-              >
-                {attachment.originalFilename}
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+          {ticket.attachments?.length > 0 && (
+            <div className="rounded-[2rem] bg-white border border-slate-200 shadow-xl p-6 md:p-8">
+              <div className="flex items-center gap-2 mb-5">
+                <Paperclip size={18} className="text-slate-600" />
+                <h2 className="text-2xl font-black text-slate-900">Attachments</h2>
+              </div>
 
-      <div className="grid xl:grid-cols-2 gap-8">
-        <div className="rounded-3xl bg-white border border-slate-200 shadow-lg p-6 space-y-5">
-          <h2 className="text-xl font-black text-slate-900">Admin actions</h2>
+              <div className="flex flex-wrap gap-3">
+                {ticket.attachments.map((attachment) => (
+                  <a
+                    key={attachment.id}
+                    href={toAbsoluteFileUrl(attachment.fileUrl)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition"
+                  >
+                    {attachment.originalFilename}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
-          <div>
-            <label className="text-sm font-semibold text-slate-700">Admin reply</label>
-            <textarea
-              value={adminReply}
-              onChange={(e) => setAdminReply(e.target.value)}
-              className="w-full mt-2 rounded-2xl border border-slate-300 px-4 py-3 min-h-[120px]"
-              placeholder="Optional response to the reporter..."
-              disabled={isLocked}
-            />
-          </div>
+          <div className="rounded-[2rem] bg-white border border-slate-200 shadow-xl p-6 md:p-8">
+            <div className="flex items-center gap-2 mb-5">
+              <MessageSquare size={18} className="text-slate-600" />
+              <h2 className="text-2xl font-black text-slate-900">Comments</h2>
+            </div>
 
-          <div className="grid sm:grid-cols-2 gap-3">
-            <button
-              onClick={() => handleStatus("IN_PROGRESS")}
-              disabled={startDisabled}
-              className={`${buttonBase} ${
-                startDisabled ? disabledClass : "bg-blue-600 hover:bg-blue-700"
-              }`}
-            >
-              Start progress
-            </button>
+            {ticket.comments?.length > 0 ? (
+              <div className="space-y-4 mb-5">
+                {ticket.comments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className="rounded-3xl bg-slate-50 border border-slate-200 p-4 md:p-5"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                      <div>
+                        <p className="font-black text-slate-800">
+                          {comment.authorName}{" "}
+                          <span className="text-xs font-semibold text-slate-500">
+                            ({comment.authorRole})
+                          </span>
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {comment.createdAt
+                            ? new Date(comment.createdAt).toLocaleString()
+                            : "-"}
+                        </p>
+                      </div>
 
-            <button
-              onClick={() => handleStatus("RESOLVED")}
-              disabled={resolveDisabled}
-              className={`${buttonBase} ${
-                resolveDisabled ? disabledClass : "bg-emerald-600 hover:bg-emerald-700"
-              }`}
-            >
-              <CheckCircle2 size={18} />
-              Mark resolved
-            </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() =>
+                            setEditingComment((prev) => ({
+                              ...prev,
+                              [comment.id]:
+                                prev[comment.id] !== undefined ? undefined : comment.message,
+                            }))
+                          }
+                          className="w-9 h-9 rounded-xl text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 flex items-center justify-center transition"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="w-9 h-9 rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center justify-center transition"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
 
-            <button
-              onClick={() => handleStatus("CLOSED")}
-              disabled={closeDisabled}
-              className={`${buttonBase} ${
-                closeDisabled ? disabledClass : "bg-slate-800 hover:bg-black"
-              }`}
-            >
-              Close ticket
-            </button>
+                    {editingComment[comment.id] !== undefined ? (
+                      <div className="mt-4 space-y-3">
+                        <textarea
+                          value={editingComment[comment.id]}
+                          onChange={(e) =>
+                            setEditingComment((prev) => ({
+                              ...prev,
+                              [comment.id]: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-2xl border border-slate-300 px-4 py-3"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleUpdateComment(comment.id)}
+                            className="rounded-2xl bg-indigo-600 text-white px-4 py-2.5 text-sm font-bold"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() =>
+                              setEditingComment((prev) => ({
+                                ...prev,
+                                [comment.id]: undefined,
+                              }))
+                            }
+                            className="rounded-2xl border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-slate-700 mt-3 leading-7">{comment.message}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 mb-5">No comments yet</p>
+            )}
 
-            <button
-              onClick={() => handleStatus("REJECTED")}
-              disabled={rejectDisabled}
-              className={`${buttonBase} ${
-                rejectDisabled ? disabledClass : "bg-red-600 hover:bg-red-700"
-              }`}
-            >
-              <XCircle size={18} />
-              Reject
-            </button>
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-slate-700">Rejection reason</label>
-            <textarea
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              className="w-full mt-2 rounded-2xl border border-slate-300 px-4 py-3 min-h-[100px]"
-              placeholder="Required only when rejecting"
-              disabled={isClosed || isRejected}
-            />
-          </div>
-        </div>
-
-        <div className="rounded-3xl bg-white border border-slate-200 shadow-lg p-6 space-y-5">
-          <h2 className="text-xl font-black text-slate-900">Technician & resolution</h2>
-
-          <div>
-            <label className="text-sm font-semibold text-slate-700">Technician ID</label>
-            <div className="mt-2 flex gap-3">
-              <input
-                value={technicianId}
-                onChange={(e) => setTechnicianId(e.target.value)}
+            <div className="flex flex-col md:flex-row gap-3">
+              <textarea
+                value={commentDraft}
+                onChange={(e) => setCommentDraft(e.target.value)}
+                placeholder="Add a new admin or staff comment..."
                 className="flex-1 rounded-2xl border border-slate-300 px-4 py-3"
-                placeholder="e.g. tech01"
-                disabled={isLocked}
               />
               <button
-                onClick={handleAssign}
-                disabled={assignDisabled}
-                className={`${buttonBase} ${
-                  assignDisabled ? disabledClass : "bg-indigo-600 hover:bg-indigo-700"
-                }`}
+                onClick={handleAddComment}
+                className="rounded-2xl bg-slate-900 hover:bg-black text-white font-bold px-5 py-3 transition"
               >
-                <UserCog size={18} />
-                Assign
+                Add comment
               </button>
             </div>
           </div>
-
-          <div>
-            <label className="text-sm font-semibold text-slate-700">Resolution notes</label>
-            <textarea
-              value={resolutionNotes}
-              onChange={(e) => setResolutionNotes(e.target.value)}
-              className="w-full mt-2 rounded-2xl border border-slate-300 px-4 py-3 min-h-[140px]"
-              placeholder="Add technical findings or final fix details..."
-              disabled={isLocked}
-            />
-          </div>
-
-          <button
-            onClick={handleResolution}
-            disabled={resolutionDisabled}
-            className={`${buttonBase} ${
-              resolutionDisabled ? disabledClass : "bg-slate-900 hover:bg-black"
-            }`}
-          >
-            Save resolution notes
-          </button>
-        </div>
-      </div>
-
-      <div className="rounded-3xl bg-white border border-slate-200 shadow-lg p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <MessageSquare size={18} className="text-slate-600" />
-          <h2 className="text-xl font-black text-slate-900">Comments</h2>
         </div>
 
-        {ticket.comments?.length > 0 ? (
-          <div className="space-y-3 mb-5">
-            {ticket.comments.map((comment) => (
-              <div
-                key={comment.id}
-                className="rounded-2xl bg-slate-50 border border-slate-200 p-4"
-              >
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
-                  <div>
-                    <p className="font-bold text-slate-800">
-                      {comment.authorName}{" "}
-                      <span className="text-xs text-slate-500">({comment.authorRole})</span>
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : "-"}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        setEditingComment((prev) => ({
-                          ...prev,
-                          [comment.id]:
-                            prev[comment.id] !== undefined ? undefined : comment.message,
-                        }))
-                      }
-                      className="text-indigo-600 hover:text-indigo-700"
-                    >
-                      <Pencil size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteComment(comment.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-
-                {editingComment[comment.id] !== undefined ? (
-                  <div className="mt-3 space-y-3">
-                    <textarea
-                      value={editingComment[comment.id]}
-                      onChange={(e) =>
-                        setEditingComment((prev) => ({
-                          ...prev,
-                          [comment.id]: e.target.value,
-                        }))
-                      }
-                      className="w-full rounded-xl border border-slate-300 px-4 py-3"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleUpdateComment(comment.id)}
-                        className="rounded-xl bg-indigo-600 text-white px-4 py-2 text-sm font-semibold"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() =>
-                          setEditingComment((prev) => ({
-                            ...prev,
-                            [comment.id]: undefined,
-                          }))
-                        }
-                        className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-slate-700 mt-3">{comment.message}</p>
-                )}
+        <div className="space-y-8">
+          <div className="rounded-[2rem] bg-white border border-slate-200 shadow-xl p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <Wrench size={22} />
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-500 mb-5">No comments yet</p>
-        )}
+              <div>
+                <h2 className="text-xl font-black text-slate-900">Admin actions</h2>
+                <p className="text-sm text-slate-500">Manage the ticket workflow</p>
+              </div>
+            </div>
 
-        <div className="flex flex-col md:flex-row gap-3">
-          <textarea
-            value={commentDraft}
-            onChange={(e) => setCommentDraft(e.target.value)}
-            placeholder="Add a new admin/staff comment..."
-            className="flex-1 rounded-2xl border border-slate-300 px-4 py-3"
-          />
-          <button
-            onClick={handleAddComment}
-            className="rounded-2xl bg-slate-900 hover:bg-black text-white font-bold px-5 py-3"
-          >
-            Add comment
-          </button>
+            <div className="space-y-5">
+              <div>
+                <label className="text-sm font-semibold text-slate-700">Admin reply</label>
+                <textarea
+                  value={adminReply}
+                  onChange={(e) => setAdminReply(e.target.value)}
+                  className="w-full mt-2 rounded-2xl border border-slate-300 px-4 py-3 min-h-[120px]"
+                  placeholder="Optional response to the reporter..."
+                  disabled={isLocked}
+                />
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-3">
+                <button
+                  onClick={() => handleStatus("IN_PROGRESS")}
+                  disabled={startDisabled}
+                  className={`${buttonBase} ${
+                    startDisabled ? disabledClass : "bg-blue-600 hover:bg-blue-700"
+                  }`}
+                >
+                  Start progress
+                </button>
+
+                <button
+                  onClick={() => handleStatus("RESOLVED")}
+                  disabled={resolveDisabled}
+                  className={`${buttonBase} ${
+                    resolveDisabled ? disabledClass : "bg-emerald-600 hover:bg-emerald-700"
+                  }`}
+                >
+                  <CheckCircle2 size={18} />
+                  Mark resolved
+                </button>
+
+                <button
+                  onClick={() => handleStatus("CLOSED")}
+                  disabled={closeDisabled}
+                  className={`${buttonBase} ${
+                    closeDisabled ? disabledClass : "bg-slate-800 hover:bg-black"
+                  }`}
+                >
+                  Close ticket
+                </button>
+
+                <button
+                  onClick={() => handleStatus("REJECTED")}
+                  disabled={rejectDisabled}
+                  className={`${buttonBase} ${
+                    rejectDisabled ? disabledClass : "bg-red-600 hover:bg-red-700"
+                  }`}
+                >
+                  <XCircle size={18} />
+                  Reject
+                </button>
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-slate-700">Rejection reason</label>
+                <textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  className="w-full mt-2 rounded-2xl border border-slate-300 px-4 py-3 min-h-[100px]"
+                  placeholder="Required only when rejecting"
+                  disabled={isClosed || isRejected}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[2rem] bg-white border border-slate-200 shadow-xl p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <UserCog size={22} />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-slate-900">Technician & resolution</h2>
+                <p className="text-sm text-slate-500">Assignment and final fix details</p>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="text-sm font-semibold text-slate-700">Technician ID</label>
+                <div className="mt-2 flex gap-3">
+                  <input
+                    value={technicianId}
+                    onChange={(e) => setTechnicianId(e.target.value)}
+                    className="flex-1 rounded-2xl border border-slate-300 px-4 py-3"
+                    placeholder="e.g. tech01"
+                    disabled={isLocked}
+                  />
+                  <button
+                    onClick={handleAssign}
+                    disabled={assignDisabled}
+                    className={`${buttonBase} ${
+                      assignDisabled ? disabledClass : "bg-indigo-600 hover:bg-indigo-700"
+                    }`}
+                  >
+                    <UserCog size={18} />
+                    Assign
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-slate-700">Resolution notes</label>
+                <textarea
+                  value={resolutionNotes}
+                  onChange={(e) => setResolutionNotes(e.target.value)}
+                  className="w-full mt-2 rounded-2xl border border-slate-300 px-4 py-3 min-h-[160px]"
+                  placeholder="Add technical findings or final fix details..."
+                  disabled={isLocked}
+                />
+              </div>
+
+              <button
+                onClick={handleResolution}
+                disabled={resolutionDisabled}
+                className={`${buttonBase} ${
+                  resolutionDisabled ? disabledClass : "bg-slate-900 hover:bg-black"
+                }`}
+              >
+                Save resolution notes
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
