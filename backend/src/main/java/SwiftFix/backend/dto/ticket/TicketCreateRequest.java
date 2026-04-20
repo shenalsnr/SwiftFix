@@ -1,14 +1,14 @@
 package SwiftFix.backend.dto.ticket;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * Payload for creating an incident ticket.
- * {@code message} is the user-facing description field from the React form;
- * it is persisted as {@code Ticket.description}.
+ * Create ticket payload. Faculty / request-type fields removed per product requirements.
+ * {@code requestTitle} is the routed queue (e.g. Technical Support). Alias {@code department} for older clients.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TicketCreateRequest {
@@ -30,17 +30,10 @@ public class TicketCreateRequest {
     @Size(max = 32)
     private String contactNo;
 
-    @NotBlank(message = "Faculty is required")
+    @NotBlank(message = "Request title is required")
     @Size(max = 120)
-    private String faculty;
-
-    @NotBlank(message = "Category is required")
-    @Size(max = 64)
-    private String category;
-
-    @NotBlank(message = "Department is required")
-    @Size(max = 120)
-    private String department;
+    @JsonAlias("department")
+    private String requestTitle;
 
     @NotBlank(message = "Subject is required")
     @Size(max = 200)
@@ -50,12 +43,10 @@ public class TicketCreateRequest {
     @Size(max = 120)
     private String campus;
 
-    /** Maps to entity {@code description} (form field name is "message"). */
     @NotBlank(message = "Description is required")
     @Size(max = 4000)
     private String message;
 
-    /** Optional: LOW, MEDIUM, HIGH — defaults to MEDIUM in service if blank. */
     @Size(max = 16)
     private String priority;
 
@@ -63,10 +54,8 @@ public class TicketCreateRequest {
     @Size(max = 64)
     private String userId;
 
-    /** Optional link to a catalogue resource (facility / equipment). */
     private Long resourceId;
 
-    /** Free-text location when not using resourceId. */
     @Size(max = 200)
     private String location;
 
@@ -102,28 +91,12 @@ public class TicketCreateRequest {
         this.contactNo = contactNo;
     }
 
-    public String getFaculty() {
-        return faculty;
+    public String getRequestTitle() {
+        return requestTitle;
     }
 
-    public void setFaculty(String faculty) {
-        this.faculty = faculty;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public String getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(String department) {
-        this.department = department;
+    public void setRequestTitle(String requestTitle) {
+        this.requestTitle = requestTitle;
     }
 
     public String getSubject() {

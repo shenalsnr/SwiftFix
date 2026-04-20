@@ -37,16 +37,21 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.findAll());
     }
 
-    /** GET — single ticket by id. */
-    @GetMapping("/{id}")
-    public ResponseEntity<TicketResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(ticketService.findById(id));
-    }
-
-    /** GET — tickets raised by a specific user ("my tickets"). */
+    /** GET — tickets raised by a specific user ("my tickets"). Must be before /{id}. */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<TicketResponse>> listForUser(@PathVariable String userId) {
         return ResponseEntity.ok(ticketService.findByUserId(userId));
+    }
+
+    /**
+     * GET — single ticket.
+     * {@code acknowledge=true} (admin): first open stores a default message visible to the submitter.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<TicketResponse> getById(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "false") boolean acknowledge) {
+        return ResponseEntity.ok(ticketService.findById(id, acknowledge));
     }
 
     /**

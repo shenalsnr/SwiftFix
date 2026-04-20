@@ -9,10 +9,17 @@ import SwiftFix.backend.repository.TicketRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class TicketService {
+
+    private static final String TECHNICAL_SUPPORT = "Technical Support";
+
+    /** Shown to the submitter the first time an admin opens the ticket for review. */
+    private static final String DEFAULT_ADMIN_ACK =
+            "Your request has been received and is being reviewed by the administration team.";
 
     private final TicketRepository ticketRepository;
 
@@ -20,23 +27,18 @@ public class TicketService {
         this.ticketRepository = ticketRepository;
     }
 
-    /**
-     * Creates a new ticket in OPEN state. Priority defaults to MEDIUM when omitted.
-     */
     @Transactional
     public TicketResponse create(TicketCreateRequest request) {
         Ticket t = new Ticket();
         t.setStatus(TicketStatus.OPEN);
         t.setSubject(request.getSubject().trim());
         t.setDescription(request.getMessage().trim());
-        t.setCategory(trimOrNull(request.getCategory()));
         t.setPriority(normalizePriority(request.getPriority()));
         t.setReporterName(request.getName().trim());
         t.setReporterEmail(request.getEmail().trim().toLowerCase());
         t.setRegNo(request.getRegNo().trim());
         t.setContactNo(request.getContactNo().trim());
-        t.setFaculty(request.getFaculty().trim());
-        t.setDepartment(request.getDepartment().trim());
+        t.setRequestTitle(request.getRequestTitle().trim());
         t.setCampus(request.getCampus().trim());
         t.setUserId(request.getUserId().trim());
         t.setResourceId(request.getResourceId());
@@ -52,9 +54,19 @@ public class TicketService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
-    public TicketResponse findById(Long id) {
-        return TicketResponse.fromEntity(getTicketOrThrow(id));
+    /**
+     * @param acknowledgeWhen true (admin console), persist a default acknowledgement message once
+     *                        so the submitter sees it under "My tickets".
+     */
+    @Transactional
+    public TicketResponse findById(Long id, boolean acknowledgeWhen) {
+        Ticket t = getTicketOrThrow(id);
+        if (acknowledgeWhen && (t.getAdminReply() == null || t.getAdminReply().isBlank())) {
+            t.setAdminReply(DEFAULT_ADMIN_ACK);
+            t.setRepliedAt(LocalDateTime.now());
+            t = ticketRepository.save(t);
+        }
+        return TicketResponse.fromEntity(t);
     }
 
     @Transactional(readOnly = true)
@@ -67,14 +79,12 @@ public class TicketService {
                 .toList();
     }
 
-    /**
-     * Updates workflow status with transition rules. REJECTED requires {@code rejectionReason}.
-     */
     @Transactional
     public TicketResponse updateStatus(Long id, TicketStatusUpdateRequest body) {
         Ticket ticket = getTicketOrThrow(id);
         TicketStatus current = ticket.getStatus();
         TicketStatus next = body.getStatus();
+        String title = ticket.getRequestTitle();
 
         if (next == TicketStatus.REJECTED) {
             if (body.getRejectionReason() == null || body.getRejectionReason().isBlank()) {
@@ -88,27 +98,28 @@ public class TicketService {
             return TicketResponse.fromEntity(ticketRepository.save(ticket));
         }
 
-        assertTransition(current, next);
+        assertTransitionForTitle(title, current, next);
         ticket.setStatus(next);
         return TicketResponse.fromEntity(ticketRepository.save(ticket));
     }
 
-    /**
-     * Assigns a technician while the ticket is still active (not CLOSED / REJECTED).
-     */
     @Transactional
     public TicketResponse assignTechnician(Long id, TicketAssignRequest body) {
         Ticket ticket = getTicketOrThrow(id);
-        if (ticket.getStatus() == TicketStatus.CLOSED || ticket.getStatus() == TicketStatus.REJECTED) {
-            throw new BusinessRuleException("Cannot assign technician to a closed or rejected ticket");
+        if (!isTechnicalSupport(ticket.getRequestTitle())) {
+            throw new BusinessRuleException(
+                    "Technician assignment applies only to Technical Support requests."
+            );
+        }
+        if (ticket.getStatus() != TicketStatus.IN_PROGRESS) {
+            throw new BusinessRuleException(
+                    "Assign a technician only while the ticket is In progress (use Start first)."
+            );
         }
         ticket.setTechnicianId(body.getTechnicianId().trim());
         return TicketResponse.fromEntity(ticketRepository.save(ticket));
     }
 
-    /**
-     * PATCH semantics: technician adds resolution notes (typically near RESOLVED).
-     */
     @Transactional
     public TicketResponse addResolutionNotes(Long id, TicketResolutionPatchRequest body) {
         Ticket ticket = getTicketOrThrow(id);
@@ -130,18 +141,36 @@ public class TicketService {
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
     }
 
-    private void assertTransition(TicketStatus current, TicketStatus next) {
-        boolean ok = switch (current) {
-            case OPEN -> next == TicketStatus.IN_PROGRESS;
-            case IN_PROGRESS -> next == TicketStatus.RESOLVED;
-            case RESOLVED -> next == TicketStatus.CLOSED;
-            case CLOSED, REJECTED -> false;
-        };
+    /**
+     * Technical Support: OPEN → IN_PROGRESS → RESOLVED → CLOSED (field workflow + technician).
+     * Other titles: OPEN → RESOLVED → CLOSED (no in-progress / no technician step).
+     */
+    private void assertTransitionForTitle(String requestTitle, TicketStatus current, TicketStatus next) {
+        boolean ok;
+        if (isTechnicalSupport(requestTitle)) {
+            ok = switch (current) {
+                case OPEN -> next == TicketStatus.IN_PROGRESS;
+                case IN_PROGRESS -> next == TicketStatus.RESOLVED;
+                case RESOLVED -> next == TicketStatus.CLOSED;
+                case CLOSED, REJECTED -> false;
+            };
+        } else {
+            ok = switch (current) {
+                case OPEN -> next == TicketStatus.RESOLVED;
+                case RESOLVED -> next == TicketStatus.CLOSED;
+                case IN_PROGRESS, CLOSED, REJECTED -> false;
+            };
+        }
         if (!ok) {
             throw new BusinessRuleException(
                     "Invalid status transition from " + current + " to " + next
+                            + " for request title \"" + requestTitle + "\""
             );
         }
+    }
+
+    private static boolean isTechnicalSupport(String requestTitle) {
+        return requestTitle != null && TECHNICAL_SUPPORT.equalsIgnoreCase(requestTitle.trim());
     }
 
     private static String normalizePriority(String raw) {

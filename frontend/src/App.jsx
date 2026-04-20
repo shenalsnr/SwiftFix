@@ -15,6 +15,7 @@ import AdminHub from './components/AdminHub';
 import CreateTicket from './components/CreateTicket';
 import UserTickets from './components/UserTickets';
 import AdminTickets from './components/AdminTickets';
+import AdminTicketDetail from './components/AdminTicketDetail';
 
 // Other Components
 import FacilitiesCatalogue from './components/FacilitiesCatalogue';
@@ -89,6 +90,7 @@ const AppContent = () => {
                     <Route path="/admin/catalogue" element={<FacilitiesCatalogue />} />
                     <Route path="/admin/feedback" element={<AdminFeedback />} />
                     <Route path="/admin/tickets" element={<AdminTickets />} />
+                    <Route path="/admin/tickets/:id" element={<AdminTicketDetail />} />
                 </Routes>
             </main>
             {!isHome && (

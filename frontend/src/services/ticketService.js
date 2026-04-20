@@ -8,7 +8,9 @@ export const getTickets = () => axios.get(API);
 
 export const getTicketsByUserId = (userId) => axios.get(`${API}/user/${userId}`);
 
-export const getTicketById = (id) => axios.get(`${API}/${id}`);
+/** @param {boolean} [acknowledge=false] admin first-open acknowledgement for submitter */
+export const getTicketById = (id, acknowledge = false) =>
+  axios.get(`${API}/${id}`, { params: { acknowledge } });
 
 export const updateStatus = (id, status, rejectionReason) =>
   axios.put(`${API}/${id}`, {

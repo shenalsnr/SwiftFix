@@ -4,23 +4,18 @@ import SwiftFix.backend.model.Ticket;
 
 import java.time.LocalDateTime;
 
-/**
- * Stable API shape returned to the React client (decouples entity from wire format).
- */
 public class TicketResponse {
 
     private Long id;
     private String status;
     private String subject;
     private String description;
-    private String category;
     private String priority;
     private String reporterName;
     private String reporterEmail;
     private String regNo;
     private String contactNo;
-    private String faculty;
-    private String department;
+    private String requestTitle;
     private String campus;
     private String userId;
     private String technicianId;
@@ -28,6 +23,8 @@ public class TicketResponse {
     private String location;
     private String resolutionNotes;
     private String rejectionReason;
+    private String adminReply;
+    private LocalDateTime repliedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -37,14 +34,12 @@ public class TicketResponse {
         r.setStatus(t.getStatus() != null ? t.getStatus().name() : null);
         r.setSubject(t.getSubject());
         r.setDescription(t.getDescription());
-        r.setCategory(t.getCategory());
         r.setPriority(t.getPriority());
         r.setReporterName(t.getReporterName());
         r.setReporterEmail(t.getReporterEmail());
         r.setRegNo(t.getRegNo());
         r.setContactNo(t.getContactNo());
-        r.setFaculty(t.getFaculty());
-        r.setDepartment(t.getDepartment());
+        r.setRequestTitle(t.getRequestTitle());
         r.setCampus(t.getCampus());
         r.setUserId(t.getUserId());
         r.setTechnicianId(t.getTechnicianId());
@@ -52,6 +47,8 @@ public class TicketResponse {
         r.setLocation(t.getLocation());
         r.setResolutionNotes(t.getResolutionNotes());
         r.setRejectionReason(t.getRejectionReason());
+        r.setAdminReply(t.getAdminReply());
+        r.setRepliedAt(t.getRepliedAt());
         r.setCreatedAt(t.getCreatedAt());
         r.setUpdatedAt(t.getUpdatedAt());
         return r;
@@ -87,14 +84,6 @@ public class TicketResponse {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
     }
 
     public String getPriority() {
@@ -137,20 +126,12 @@ public class TicketResponse {
         this.contactNo = contactNo;
     }
 
-    public String getFaculty() {
-        return faculty;
+    public String getRequestTitle() {
+        return requestTitle;
     }
 
-    public void setFaculty(String faculty) {
-        this.faculty = faculty;
-    }
-
-    public String getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(String department) {
-        this.department = department;
+    public void setRequestTitle(String requestTitle) {
+        this.requestTitle = requestTitle;
     }
 
     public String getCampus() {
@@ -207,6 +188,22 @@ public class TicketResponse {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getAdminReply() {
+        return adminReply;
+    }
+
+    public void setAdminReply(String adminReply) {
+        this.adminReply = adminReply;
+    }
+
+    public LocalDateTime getRepliedAt() {
+        return repliedAt;
+    }
+
+    public void setRepliedAt(LocalDateTime repliedAt) {
+        this.repliedAt = repliedAt;
     }
 
     public LocalDateTime getCreatedAt() {

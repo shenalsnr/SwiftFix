@@ -6,8 +6,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 /**
- * Maintenance & incident ticket linked to a user and optionally to a catalogue {@code resourceId}.
- * Workflow is enforced in {@link SwiftFix.backend.service.TicketService}.
+ * Maintenance & incident ticket. {@code requestTitle} is stored in column {@code department}
+ * for backward-compatible schema (values e.g. "Technical Support", "Student Services").
  */
 @Entity
 @Table(name = "ticket")
@@ -27,13 +27,9 @@ public class Ticket {
     @Column(nullable = false, length = 4000)
     private String description;
 
-    @Column(length = 64)
-    private String category;
-
     @Column(length = 16)
     private String priority;
 
-    /** Display name from the reporter (OAuth / form). */
     @Column(length = 120)
     private String reporterName;
 
@@ -46,24 +42,19 @@ public class Ticket {
     @Column(length = 32)
     private String contactNo;
 
-    @Column(length = 120)
-    private String faculty;
-
-    @Column(length = 120)
-    private String department;
+    /** Request "title" / routing category (UI label). DB column kept as department. */
+    @Column(name = "department", length = 120)
+    private String requestTitle;
 
     @Column(length = 120)
     private String campus;
 
-    /** Owning user (e.g. OAuth subject or internal id). */
     @Column(length = 64)
     private String userId;
 
-    /** Assigned technician / staff id. */
     @Column(length = 64)
     private String technicianId;
 
-    /** Optional FK-style reference to Resource.id (no JPA relation — avoids tight coupling). */
     private Long resourceId;
 
     @Column(length = 200)
@@ -74,6 +65,12 @@ public class Ticket {
 
     @Column(length = 1000)
     private String rejectionReason;
+
+    /** First admin acknowledgement visible to the submitter (set on first admin open). */
+    @Column(length = 2000)
+    private String adminReply;
+
+    private LocalDateTime repliedAt;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -124,14 +121,6 @@ public class Ticket {
         this.description = description;
     }
 
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
     public String getPriority() {
         return priority;
     }
@@ -172,20 +161,12 @@ public class Ticket {
         this.contactNo = contactNo;
     }
 
-    public String getFaculty() {
-        return faculty;
+    public String getRequestTitle() {
+        return requestTitle;
     }
 
-    public void setFaculty(String faculty) {
-        this.faculty = faculty;
-    }
-
-    public String getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(String department) {
-        this.department = department;
+    public void setRequestTitle(String requestTitle) {
+        this.requestTitle = requestTitle;
     }
 
     public String getCampus() {
@@ -242,6 +223,22 @@ public class Ticket {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getAdminReply() {
+        return adminReply;
+    }
+
+    public void setAdminReply(String adminReply) {
+        this.adminReply = adminReply;
+    }
+
+    public LocalDateTime getRepliedAt() {
+        return repliedAt;
+    }
+
+    public void setRepliedAt(LocalDateTime repliedAt) {
+        this.repliedAt = repliedAt;
     }
 
     public LocalDateTime getCreatedAt() {
