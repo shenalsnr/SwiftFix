@@ -18,16 +18,16 @@ public class User {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Column(nullable = false, unique = true)
-    private String studentId; // Format: IT12345678
+    @Column(name = "student_id", nullable = true, unique = true)
+    private String studentId; // Format: IT12345678 or OAUTH2_timestamp for OAuth users
 
-    @Column(nullable = false)
+    @Column(name = "phone_number", nullable = true)
     private String phoneNumber;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String address;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String faculty; // Simple String to avoid validation errors
 
     @Column(nullable = false, unique = true)

@@ -47,10 +47,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                         .email(email)
                         .fullName(name != null ? name : email.split("@")[0])
                         .studentId("OAUTH2_" + System.currentTimeMillis())  // Generate a unique student ID
-                        .phoneNumber("")  // OAuth2 doesn't provide phone
-                        .address("")      // OAuth2 doesn't provide address
-                        .faculty("")      // OAuth2 doesn't provide faculty
-                        .password("")     // OAuth2 users don't have passwords
+                        .phoneNumber(null)  // OAuth2 doesn't provide phone - set to null instead of empty string
+                        .address(null)      // OAuth2 doesn't provide address - set to null instead of empty string
+                        .faculty(null)      // OAuth2 doesn't provide faculty - set to null instead of empty string
+                        .password(null)     // OAuth2 users don't have passwords - set to null instead of empty string
                         .role("USER")
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())
