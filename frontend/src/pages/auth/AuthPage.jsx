@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, User, Phone, MapPin, Upload, GraduationCap, Home } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import axiosInstance from '../../services/axiosConfig';
 
 const AuthPage = () => {
     const navigate = useNavigate();
+    const { login, adminLogin } = useAuth();
     const [isLogin, setIsLogin] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -45,18 +47,19 @@ const AuthPage = () => {
         try {
             console.log('Attempting login with:', { emailOrId: loginForm.emailOrId });
             
-            const response = await axiosInstance.post('/api/auth/login', {
-                emailOrId: loginForm.emailOrId,
-                password: loginForm.password,
-            });
+            // Check if it's the specific admin account to use the correct endpoint
+            let responseData;
+            if (loginForm.emailOrId === 'admin123@gmail.com') {
+                responseData = await adminLogin(loginForm.emailOrId, loginForm.password);
+            } else {
+                responseData = await login(loginForm.emailOrId, loginForm.password);
+            }
 
-            console.log('Login successful:', response.data);
+            console.log('Login successful:', responseData);
             
-            const { token, role } = response.data;
-            localStorage.setItem('token', token);
-            localStorage.setItem('role', role);
+            const { role } = responseData;
 
-            // Redirect based on role
+            // Redirect based on role from database
             if (role === 'ADMIN') {
                 navigate('/admin');
             } else {
@@ -127,9 +130,7 @@ const AuthPage = () => {
             console.log('✅ Registration successful!');
             console.log('Response:', response.data);
 
-            const { token, role } = response.data;
-            localStorage.setItem('token', token);
-            localStorage.setItem('role', role);
+            const { role } = response.data;
 
             // Redirect based on role
             if (role === 'ADMIN') {
@@ -223,7 +224,7 @@ const AuthPage = () => {
                                 <form onSubmit={handleLogin} className="space-y-5">
                                     <div>
                                         <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
-                                            Email or Student ID
+                                            Email or User ID
                                         </label>
                                         <div className="relative group">
                                             <Mail className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />

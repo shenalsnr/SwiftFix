@@ -16,14 +16,12 @@ import { UserCheck, ShieldCheck, GraduationCap, Building2, LogOut, User } from '
 import { useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
-import AdminLogin from './pages/admin/AdminLogin';
-
 const Navigation = () => {
     const location = useLocation();
     const { logout } = useAuth();
-    const isAdminRoute = location.pathname.startsWith('/admin') && location.pathname !== '/admin-login';
+    const isAdminRoute = location.pathname.startsWith('/admin');
     const isHome = location.pathname === '/';
-    const isAuth = location.pathname === '/auth' || location.pathname === '/admin-login' || location.pathname === '/oauth-callback';
+    const isAuth = location.pathname === '/auth' || location.pathname === '/oauth-callback';
 
     if (isHome || isAuth) return null;
 
@@ -53,7 +51,7 @@ const Navigation = () => {
                     <div className="flex space-x-2 ml-4">
                         <button onClick={() => { 
                             logout(); 
-                            window.location.href = isAdminRoute ? '/admin-login' : '/'; 
+                            window.location.href = '/'; 
                         }} className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-red-400 hover:text-white hover:bg-red-500/20 transition-all">
                             <LogOut size={18} /> Logout
                         </button>
@@ -67,7 +65,7 @@ const Navigation = () => {
 const AppContent = () => {
     const location = useLocation();
     const isHome = location.pathname === '/';
-    const isAuth = location.pathname === '/auth' || location.pathname === '/admin-login';
+    const isAuth = location.pathname === '/auth';
 
     return (
         <div className="min-h-screen flex flex-col bg-transparent font-sans text-gray-900">
@@ -76,17 +74,16 @@ const AppContent = () => {
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/auth" element={<AuthPage />} />
-                    <Route path="/admin-login" element={<AdminLogin />} />
                     <Route path="/oauth-callback" element={<OAuthCallback />} />
                     <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
                     <Route path="/my-bookings" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><MyBookings /></div>} />
                     <Route path="/catalogue" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><StudentCatalogue /></div>} />
                     <Route path="/student-catalogue" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><StudentCatalogue /></div>} />
-                    <Route path="/admin" element={<AdminHub />} />
-                    <Route path="/admin/bookings" element={<AdminDashboard />} />
-                    <Route path="/admin/confirmed-bookings" element={<ConformBooking />} />
-                    <Route path="/admin/catalogue" element={<FacilitiesCatalogue />} />
-                    <Route path="/admin/feedback" element={<AdminFeedback />} />
+                    <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminHub /></ProtectedRoute>} />
+                    <Route path="/admin/bookings" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
+                    <Route path="/admin/confirmed-bookings" element={<ProtectedRoute requiredRole="ADMIN"><ConformBooking /></ProtectedRoute>} />
+                    <Route path="/admin/catalogue" element={<ProtectedRoute requiredRole="ADMIN"><FacilitiesCatalogue /></ProtectedRoute>} />
+                    <Route path="/admin/feedback" element={<ProtectedRoute requiredRole="ADMIN"><AdminFeedback /></ProtectedRoute>} />
                     <Route path="/book" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><CreateBooking /></div>} />
                 </Routes>
             </main>

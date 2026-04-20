@@ -20,7 +20,7 @@ export const ProtectedRoute = ({ children, requiredRole = null }) => {
         return <Navigate to="/auth" replace />;
     }
 
-    if (requiredRole && role !== requiredRole) {
+    if (requiredRole && role?.toUpperCase() !== requiredRole?.toUpperCase()) {
         return <Navigate to="/" replace />;
     }
 
