@@ -1,172 +1,358 @@
-import { useEffect, useState } from "react";
-import { getTicketsByUserId } from "../services/ticketService";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Calendar, RotateCcw, MessageCircle, Ticket, Plus } from "lucide-react";
+import {
+  getTicketsByUserId,
+  addComment,
+  updateComment,
+  deleteComment,
+  toAbsoluteFileUrl,
+} from "../services/ticketService";
+import {
+  AlertCircle,
+  MessageSquare,
+  PlusCircle,
+  Paperclip,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
-const STATUS_STYLES = {
-  OPEN: "bg-amber-100 text-amber-800",
-  IN_PROGRESS: "bg-sky-100 text-sky-800",
-  RESOLVED: "bg-emerald-100 text-emerald-800",
-  CLOSED: "bg-slate-200 text-slate-700",
-  REJECTED: "bg-rose-100 text-rose-800",
+const getCurrentUser = () => {
+  const savedUserId = localStorage.getItem("swiftfix_user_id") || "user1";
+  const savedName = localStorage.getItem("swiftfix_user_name") || "Student User";
+  return { id: savedUserId, name: savedName, role: "USER" };
+};
+
+const badgeMap = {
+  OPEN: "bg-amber-100 text-amber-700 border-amber-200",
+  IN_PROGRESS: "bg-blue-100 text-blue-700 border-blue-200",
+  RESOLVED: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  CLOSED: "bg-slate-200 text-slate-700 border-slate-300",
+  REJECTED: "bg-red-100 text-red-700 border-red-200",
 };
 
 export default function UserTickets() {
+  const currentUser = useMemo(() => getCurrentUser(), []);
   const [tickets, setTickets] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [search, setSearch] = useState("");
-  const [date, setDate] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [commentDrafts, setCommentDrafts] = useState({});
+  const [editingComment, setEditingComment] = useState({});
 
-  const userId = "user1";
-
-  const load = async () => {
+  const loadTickets = async () => {
+    setLoading(true);
     try {
-      const res = await getTicketsByUserId(userId);
-      setTickets(res.data);
-      setFiltered(res.data);
+      const data = await getTicketsByUserId(currentUser.id);
+      setTickets(data);
     } catch (err) {
-      console.error(err);
+      alert(err?.response?.data?.message || err.message || "Failed to load tickets");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    load();
+    loadTickets();
   }, []);
 
-  useEffect(() => {
-    let data = [...tickets];
-    if (search) {
-      const q = search.toLowerCase();
-      data = data.filter(
-        (t) =>
-          (t.description && t.description.toLowerCase().includes(q)) ||
-          (t.subject || "").toLowerCase().includes(q) ||
-          (t.requestTitle || "").toLowerCase().includes(q)
-      );
-    }
-    if (date) {
-      data = data.filter((t) => {
-        if (!t.createdAt) return true;
-        return t.createdAt.startsWith(date);
-      });
-    }
-    setFiltered(data);
-  }, [search, date, tickets]);
+  const handleAddComment = async (ticketId) => {
+    const message = (commentDrafts[ticketId] || "").trim();
+    if (!message) return;
 
-  const resetFilters = () => {
-    setSearch("");
-    setDate("");
-    setFiltered(tickets);
+    try {
+      const updated = await addComment(ticketId, {
+        authorId: currentUser.id,
+        authorName: currentUser.name,
+        authorRole: currentUser.role,
+        message,
+      });
+
+      setTickets((prev) => prev.map((ticket) => (ticket.id === updated.id ? updated : ticket)));
+      setCommentDrafts((prev) => ({ ...prev, [ticketId]: "" }));
+    } catch (err) {
+      alert(err?.response?.data?.message || "Failed to add comment");
+    }
   };
 
+  const handleUpdateComment = async (ticketId, commentId) => {
+    const message = (editingComment[commentId] || "").trim();
+    if (!message) return;
+
+    try {
+      const updated = await updateComment(ticketId, commentId, {
+        editorId: currentUser.id,
+        editorRole: currentUser.role,
+        message,
+      });
+
+      setTickets((prev) => prev.map((ticket) => (ticket.id === updated.id ? updated : ticket)));
+      setEditingComment((prev) => ({ ...prev, [commentId]: undefined }));
+    } catch (err) {
+      alert(err?.response?.data?.message || "Failed to update comment");
+    }
+  };
+
+  const handleDeleteComment = async (ticketId, commentId) => {
+    try {
+      const updated = await deleteComment(ticketId, commentId, currentUser.id, currentUser.role);
+      setTickets((prev) => prev.map((ticket) => (ticket.id === updated.id ? updated : ticket)));
+    } catch (err) {
+      alert(err?.response?.data?.message || "Failed to delete comment");
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-12 text-slate-600">Loading tickets...</div>;
+  }
+
   return (
-    <div className="min-h-[calc(100vh-8rem)] bg-gradient-to-b from-slate-50 to-slate-100/90">
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-1">
-              SwiftFix · My requests
-            </p>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <Ticket className="text-indigo-600" />
-              My tickets
-            </h1>
-            <p className="text-slate-600 text-sm mt-1">
-              When staff opens your ticket, you&apos;ll see their first acknowledgement below.
-            </p>
-          </div>
-          <Link
-            to="/tickets/create"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 text-white px-5 py-2.5 font-semibold hover:bg-indigo-700 shadow-lg shadow-indigo-600/20"
-          >
-            <Plus size={20} />
-            New request
-          </Link>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-indigo-600">SwiftFix · Student panel</p>
+          <h1 className="text-3xl font-black text-slate-900">My tickets</h1>
+          <p className="text-slate-500 mt-2">
+            Track progress, see admin replies, and continue the conversation.
+          </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 mb-6 flex flex-col md:flex-row gap-4 shadow-sm">
-          <div className="flex items-center border border-slate-200 rounded-xl px-3 py-2 flex-1">
-            <Search size={18} className="text-slate-400 mr-2 shrink-0" />
-            <input
-              type="text"
-              placeholder="Search subject, message, or title…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full outline-none text-sm"
-            />
-          </div>
-          <div className="flex items-center border border-slate-200 rounded-xl px-3 py-2">
-            <Calendar size={18} className="text-slate-400 mr-2" />
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="outline-none text-sm" />
-          </div>
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="inline-flex items-center justify-center gap-1 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200"
-          >
-            <RotateCcw size={16} />
-            Reset
-          </button>
-        </div>
-
-        {filtered.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200 bg-white/80 py-16 text-center text-slate-500">
-            <p>No tickets match.</p>
-            <Link to="/tickets/create" className="text-indigo-600 font-medium mt-2 inline-block">
-              Submit a request
-            </Link>
-          </div>
-        ) : (
-          <ul className="space-y-4">
-            {filtered.map((t) => (
-              <li
-                key={t.id}
-                className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                  <div>
-                    <h2 className="font-semibold text-lg text-slate-900">{t.subject || "Ticket"}</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {t.requestTitle} · #{t.id}
-                      {t.createdAt && ` · ${t.createdAt.split("T")[0]}`}
-                    </p>
-                  </div>
-                  <span
-                    className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
-                      STATUS_STYLES[t.status] || "bg-slate-100 text-slate-700"
-                    }`}
-                  >
-                    {t.status?.replace("_", " ")}
-                  </span>
-                </div>
-                <p className="text-sm text-slate-700 whitespace-pre-wrap line-clamp-4">{t.description}</p>
-
-                {t.adminReply && (
-                  <div className="mt-4 rounded-xl bg-indigo-50 border border-indigo-100 px-4 py-3">
-                    <div className="flex items-center gap-2 text-indigo-800 font-semibold text-sm mb-1">
-                      <MessageCircle size={16} />
-                      Message from administration
-                    </div>
-                    <p className="text-sm text-indigo-950">{t.adminReply}</p>
-                    {t.repliedAt && (
-                      <p className="text-xs text-indigo-600/80 mt-2">
-                        {new Date(t.repliedAt).toLocaleString()}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {t.requestTitle === "Technical Support" && (
-                  <p className="text-xs text-slate-500 mt-3">
-                    Technician:{" "}
-                    <span className="font-medium text-slate-700">{t.technicianId || "Not assigned yet"}</span>
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+        <Link
+          to="/tickets/create"
+          className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-3 shadow-lg"
+        >
+          <PlusCircle size={18} />
+          Create ticket
+        </Link>
       </div>
+
+      {tickets.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
+          <p className="text-xl font-bold text-slate-800">No tickets yet</p>
+          <p className="text-slate-500 mt-2">Create your first ticket to get started.</p>
+        </div>
+      ) : (
+        <div className="grid gap-6">
+          {tickets.map((ticket) => (
+            <div
+              key={ticket.id}
+              className="rounded-3xl bg-white border border-slate-200 shadow-lg p-6"
+            >
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div>
+                  <div className="flex flex-wrap items-center gap-3 mb-3">
+                    <span
+                      className={`inline-flex px-3 py-1 rounded-full border text-xs font-bold ${
+                        badgeMap[ticket.status] || "bg-slate-100 text-slate-700 border-slate-200"
+                      }`}
+                    >
+                      {ticket.status.replaceAll("_", " ")}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-500">
+                      #{ticket.id}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-500">
+                      {ticket.priority}
+                    </span>
+                  </div>
+
+                  <h2 className="text-xl font-black text-slate-900">{ticket.subject}</h2>
+                  <p className="text-slate-600 mt-2">{ticket.description}</p>
+
+                  <div className="grid md:grid-cols-2 gap-3 mt-5 text-sm">
+                    <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
+                      <p className="font-semibold text-slate-800">Request title</p>
+                      <p className="text-slate-600 mt-1">{ticket.requestTitle}</p>
+                    </div>
+
+                    <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
+                      <p className="font-semibold text-slate-800">Campus</p>
+                      <p className="text-slate-600 mt-1">{ticket.campus}</p>
+                    </div>
+
+                    <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
+                      <p className="font-semibold text-slate-800">Technician</p>
+                      <p className="text-slate-600 mt-1">{ticket.technicianId || "Not assigned yet"}</p>
+                    </div>
+
+                    <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
+                      <p className="font-semibold text-slate-800">Created</p>
+                      <p className="text-slate-600 mt-1">
+                        {ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : "-"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {(ticket.adminReply || ticket.rejectionReason || ticket.resolutionNotes) && (
+                <div className="mt-6 grid md:grid-cols-3 gap-4">
+                  {ticket.adminReply && (
+                    <div className="rounded-2xl bg-blue-50 border border-blue-200 p-4">
+                      <p className="font-bold text-blue-800">Admin reply</p>
+                      <p className="text-blue-900/80 mt-2 text-sm">{ticket.adminReply}</p>
+                    </div>
+                  )}
+
+                  {ticket.rejectionReason && (
+                    <div className="rounded-2xl bg-red-50 border border-red-200 p-4">
+                      <p className="font-bold text-red-800">Rejection reason</p>
+                      <p className="text-red-900/80 mt-2 text-sm">{ticket.rejectionReason}</p>
+                    </div>
+                  )}
+
+                  {ticket.resolutionNotes && (
+                    <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4">
+                      <p className="font-bold text-emerald-800">Resolution notes</p>
+                      <p className="text-emerald-900/80 mt-2 text-sm">{ticket.resolutionNotes}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {ticket.attachments?.length > 0 && (
+                <div className="mt-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Paperclip size={16} className="text-slate-500" />
+                    <p className="font-bold text-slate-800">Attachments</p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    {ticket.attachments.map((attachment) => (
+                      <a
+                        key={attachment.id}
+                        href={toAbsoluteFileUrl(attachment.fileUrl)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                      >
+                        {attachment.originalFilename}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <MessageSquare size={18} className="text-slate-600" />
+                  <h3 className="font-black text-slate-900">Comments</h3>
+                </div>
+
+                {ticket.comments?.length > 0 ? (
+                  <div className="space-y-3 mb-4">
+                    {ticket.comments.map((comment) => {
+                      const isOwner = comment.authorId === currentUser.id;
+
+                      return (
+                        <div
+                          key={comment.id}
+                          className="rounded-2xl bg-white border border-slate-200 p-4"
+                        >
+                          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                            <div>
+                              <p className="font-bold text-slate-800">
+                                {comment.authorName}{" "}
+                                <span className="text-xs text-slate-500">({comment.authorRole})</span>
+                              </p>
+                              <p className="text-xs text-slate-500 mt-1">
+                                {comment.createdAt
+                                  ? new Date(comment.createdAt).toLocaleString()
+                                  : "-"}
+                              </p>
+                            </div>
+
+                            {isOwner && (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() =>
+                                    setEditingComment((prev) => ({
+                                      ...prev,
+                                      [comment.id]:
+                                        prev[comment.id] !== undefined ? undefined : comment.message,
+                                    }))
+                                  }
+                                  className="text-indigo-600 hover:text-indigo-700"
+                                >
+                                  <Pencil size={16} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteComment(ticket.id, comment.id)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {editingComment[comment.id] !== undefined ? (
+                            <div className="mt-3 space-y-3">
+                              <textarea
+                                value={editingComment[comment.id]}
+                                onChange={(e) =>
+                                  setEditingComment((prev) => ({
+                                    ...prev,
+                                    [comment.id]: e.target.value,
+                                  }))
+                                }
+                                className="w-full rounded-xl border border-slate-300 px-4 py-3"
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleUpdateComment(ticket.id, comment.id)}
+                                  className="rounded-xl bg-indigo-600 text-white px-4 py-2 text-sm font-semibold"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    setEditingComment((prev) => ({
+                                      ...prev,
+                                      [comment.id]: undefined,
+                                    }))
+                                  }
+                                  className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-slate-700 mt-3">{comment.message}</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
+                    <AlertCircle size={16} />
+                    No comments yet
+                  </div>
+                )}
+
+                <div className="flex flex-col md:flex-row gap-3">
+                  <textarea
+                    value={commentDrafts[ticket.id] || ""}
+                    onChange={(e) =>
+                      setCommentDrafts((prev) => ({
+                        ...prev,
+                        [ticket.id]: e.target.value,
+                      }))
+                    }
+                    placeholder="Write a follow-up comment..."
+                    className="flex-1 rounded-xl border border-slate-300 px-4 py-3 bg-white"
+                  />
+                  <button
+                    onClick={() => handleAddComment(ticket.id)}
+                    className="rounded-xl bg-slate-900 hover:bg-black text-white font-semibold px-5 py-3"
+                  >
+                    Add comment
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

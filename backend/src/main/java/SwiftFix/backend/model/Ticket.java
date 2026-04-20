@@ -4,11 +4,9 @@ import SwiftFix.backend.enums.TicketStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Maintenance & incident ticket. {@code requestTitle} is stored in column {@code department}
- * for backward-compatible schema (values e.g. "Technical Support", "Student Services").
- */
 @Entity
 @Table(name = "ticket")
 public class Ticket {
@@ -27,29 +25,29 @@ public class Ticket {
     @Column(nullable = false, length = 4000)
     private String description;
 
-    @Column(length = 16)
-    private String priority;
+    @Column(nullable = false, length = 16)
+    private String priority = "MEDIUM";
 
-    @Column(length = 120)
+    @Column(nullable = false, length = 120)
     private String reporterName;
 
-    @Column(length = 160)
+    @Column(nullable = false, length = 160)
     private String reporterEmail;
 
-    @Column(length = 64)
+    @Column(nullable = false, length = 64)
     private String regNo;
 
-    @Column(length = 32)
+    @Column(nullable = false, length = 32)
     private String contactNo;
 
-    /** Request "title" / routing category (UI label). DB column kept as department. */
-    @Column(name = "department", length = 120)
+    // keep same DB column for compatibility
+    @Column(name = "department", nullable = false, length = 120)
     private String requestTitle;
 
-    @Column(length = 120)
+    @Column(nullable = false, length = 120)
     private String campus;
 
-    @Column(length = 64)
+    @Column(nullable = false, length = 64)
     private String userId;
 
     @Column(length = 64)
@@ -66,21 +64,42 @@ public class Ticket {
     @Column(length = 1000)
     private String rejectionReason;
 
-    /** First admin acknowledgement visible to the submitter (set on first admin open). */
     @Column(length = 2000)
     private String adminReply;
 
     private LocalDateTime repliedAt;
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    @OneToMany(
+            mappedBy = "ticket",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    @OrderBy("createdAt ASC")
+    private List<TicketComment> comments = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "ticket",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    @OrderBy("createdAt ASC")
+    private List<TicketAttachment> attachments = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = this.createdAt;
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+
         if (this.status == null) {
             this.status = TicketStatus.OPEN;
+        }
+        if (this.priority == null || this.priority.isBlank()) {
+            this.priority = "MEDIUM";
         }
     }
 
@@ -89,12 +108,28 @@ public class Ticket {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Long getId() {
-        return id;
+    public void addComment(TicketComment comment) {
+        comments.add(comment);
+        comment.setTicket(this);
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void removeComment(TicketComment comment) {
+        comments.remove(comment);
+        comment.setTicket(null);
+    }
+
+    public void addAttachment(TicketAttachment attachment) {
+        attachments.add(attachment);
+        attachment.setTicket(this);
+    }
+
+    public void removeAttachment(TicketAttachment attachment) {
+        attachments.remove(attachment);
+        attachment.setTicket(null);
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public TicketStatus getStatus() {
@@ -245,15 +280,23 @@ public class Ticket {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public List<TicketComment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<TicketComment> comments) {
+        this.comments = comments;
+    }
+
+    public List<TicketAttachment> getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(List<TicketAttachment> attachments) {
+        this.attachments = attachments;
     }
 }

@@ -1,10 +1,12 @@
 package SwiftFix.backend.dto.ticket;
 
-/**
- * Body for PATCH /api/tickets/{id}/resolution — technician / staff resolution notes.
- */
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class TicketResolutionPatchRequest {
 
+    @NotBlank(message = "resolutionNotes is required")
+    @Size(max = 2000, message = "resolutionNotes is too long")
     private String resolutionNotes;
 
     public String getResolutionNotes() {

@@ -1,16 +1,19 @@
 package SwiftFix.backend.dto.ticket;
 
 import SwiftFix.backend.enums.TicketStatus;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
-/**
- * Body for PUT /api/tickets/{id} — change workflow status.
- * When moving to {@link TicketStatus#REJECTED}, {@code rejectionReason} is required (enforced in service).
- */
 public class TicketStatusUpdateRequest {
 
+    @NotNull(message = "status is required")
     private TicketStatus status;
 
+    @Size(max = 1000, message = "rejectionReason is too long")
     private String rejectionReason;
+
+    @Size(max = 2000, message = "adminReply is too long")
+    private String adminReply;
 
     public TicketStatus getStatus() {
         return status;
@@ -26,5 +29,13 @@ public class TicketStatusUpdateRequest {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getAdminReply() {
+        return adminReply;
+    }
+
+    public void setAdminReply(String adminReply) {
+        this.adminReply = adminReply;
     }
 }

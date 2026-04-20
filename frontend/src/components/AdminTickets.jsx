@@ -1,36 +1,33 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { getTickets } from "../services/ticketService";
-import {
-  Ticket,
-  ChevronRight,
-  User,
-  Building2,
-  RefreshCw,
-  Inbox,
-} from "lucide-react";
+import { Search, Filter, Eye } from "lucide-react";
 
-const STATUS_STYLES = {
-  OPEN: "bg-amber-100 text-amber-800 ring-amber-200",
-  IN_PROGRESS: "bg-sky-100 text-sky-800 ring-sky-200",
-  RESOLVED: "bg-emerald-100 text-emerald-800 ring-emerald-200",
-  CLOSED: "bg-slate-200 text-slate-700 ring-slate-300",
-  REJECTED: "bg-rose-100 text-rose-800 ring-rose-200",
+const badgeMap = {
+  OPEN: "bg-amber-100 text-amber-700 border-amber-200",
+  IN_PROGRESS: "bg-blue-100 text-blue-700 border-blue-200",
+  RESOLVED: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  CLOSED: "bg-slate-200 text-slate-700 border-slate-300",
+  REJECTED: "bg-red-100 text-red-700 border-red-200",
 };
 
 export default function AdminTickets() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "ALL",
+    priority: "ALL",
+  });
 
   const loadTickets = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const res = await getTickets();
-      setTickets(res.data);
+      const data = await getTickets();
+      setTickets(data);
     } catch (err) {
-      console.error(err);
-      alert("Could not load tickets.");
+      alert(err?.response?.data?.message || err.message || "Failed to load tickets");
     } finally {
       setLoading(false);
     }
@@ -40,91 +37,138 @@ export default function AdminTickets() {
     loadTickets();
   }, []);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-      <div className="max-w-4xl mx-auto px-4 py-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600 mb-1">
-              Admin · Maintenance hub
-            </p>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <Inbox className="text-indigo-600" />
-              Incoming tickets
-            </h1>
-            <p className="text-slate-600 text-sm mt-1">
-              Open a ticket to see submitter details first, then the request. Actions depend on{" "}
-              <strong>request title</strong> (Technical Support uses technician steps).
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={loadTickets}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm"
-          >
-            <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-            Refresh
-          </button>
-        </div>
+  const filteredTickets = useMemo(() => {
+    const search = filters.search.trim().toLowerCase();
 
-        {loading ? (
-          <div className="text-center py-20 text-slate-500">Loading tickets…</div>
-        ) : tickets.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200 bg-white/80 py-16 text-center text-slate-500">
-            No tickets yet.
-          </div>
-        ) : (
-          <ul className="space-y-3">
-            {tickets.map((t) => (
-              <li key={t.id}>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/admin/tickets/${t.id}`)}
-                  className="w-full text-left rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all group"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex gap-4 min-w-0">
-                      <div className="shrink-0 p-3 rounded-xl bg-indigo-50 text-indigo-600">
-                        <Ticket size={22} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-slate-900 truncate group-hover:text-indigo-700">
-                          {t.subject || "No subject"}
-                        </p>
-                        <p className="text-sm text-slate-600 line-clamp-2 mt-0.5">{t.description}</p>
-                        <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-slate-500">
-                          <span className="inline-flex items-center gap-1">
-                            <User size={14} />
-                            {t.reporterName || "—"}
-                          </span>
-                          <span className="inline-flex items-center gap-1">
-                            <Building2 size={14} />
-                            {t.requestTitle || "—"}
-                          </span>
-                          <span>#{t.id}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="shrink-0 flex flex-col items-end gap-2">
-                      <span
-                        className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold ring-1 ${
-                          STATUS_STYLES[t.status] || "bg-slate-100 text-slate-700"
-                        }`}
-                      >
-                        {t.status?.replace("_", " ")}
-                      </span>
-                      <ChevronRight
-                        className="text-slate-400 group-hover:text-indigo-500 transition-colors"
-                        size={22}
-                      />
-                    </div>
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+    return tickets.filter((ticket) => {
+      const matchesSearch =
+        !search ||
+        ticket.subject?.toLowerCase().includes(search) ||
+        ticket.description?.toLowerCase().includes(search) ||
+        ticket.requestTitle?.toLowerCase().includes(search) ||
+        ticket.reporterName?.toLowerCase().includes(search) ||
+        String(ticket.id).includes(search);
+
+      const matchesStatus =
+        filters.status === "ALL" || ticket.status === filters.status;
+
+      const matchesPriority =
+        filters.priority === "ALL" || ticket.priority === filters.priority;
+
+      return matchesSearch && matchesStatus && matchesPriority;
+    });
+  }, [tickets, filters]);
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <p className="text-sm font-semibold text-indigo-600">SwiftFix · Admin panel</p>
+        <h1 className="text-3xl font-black text-slate-900">All maintenance tickets</h1>
+        <p className="text-slate-500 mt-2">
+          Review, filter, and open tickets for detailed handling.
+        </p>
       </div>
+
+      <div className="rounded-3xl bg-white border border-slate-200 shadow-lg p-6">
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input
+              value={filters.search}
+              onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
+              placeholder="Search by id, title, user..."
+              className="w-full rounded-2xl border border-slate-300 pl-11 pr-4 py-3"
+            />
+          </div>
+
+          <div className="relative">
+            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <select
+              value={filters.status}
+              onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
+              className="w-full rounded-2xl border border-slate-300 pl-11 pr-4 py-3 bg-white"
+            >
+              <option value="ALL">All statuses</option>
+              <option value="OPEN">OPEN</option>
+              <option value="IN_PROGRESS">IN_PROGRESS</option>
+              <option value="RESOLVED">RESOLVED</option>
+              <option value="CLOSED">CLOSED</option>
+              <option value="REJECTED">REJECTED</option>
+            </select>
+          </div>
+
+          <div>
+            <select
+              value={filters.priority}
+              onChange={(e) => setFilters((prev) => ({ ...prev, priority: e.target.value }))}
+              className="w-full rounded-2xl border border-slate-300 px-4 py-3 bg-white"
+            >
+              <option value="ALL">All priorities</option>
+              <option value="LOW">LOW</option>
+              <option value="MEDIUM">MEDIUM</option>
+              <option value="HIGH">HIGH</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-12 text-slate-600">Loading tickets...</div>
+      ) : filteredTickets.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
+          <p className="text-xl font-bold text-slate-800">No tickets found</p>
+        </div>
+      ) : (
+        <div className="grid gap-5">
+          {filteredTickets.map((ticket) => (
+            <div
+              key={ticket.id}
+              className="rounded-3xl bg-white border border-slate-200 shadow-lg p-6"
+            >
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-xs font-bold text-slate-500">#{ticket.id}</span>
+                    <span
+                      className={`inline-flex px-3 py-1 rounded-full border text-xs font-bold ${
+                        badgeMap[ticket.status] || "bg-slate-100 text-slate-700 border-slate-200"
+                      }`}
+                    >
+                      {ticket.status.replaceAll("_", " ")}
+                    </span>
+                    <span className="rounded-full bg-slate-100 text-slate-700 px-3 py-1 text-xs font-bold border border-slate-200">
+                      {ticket.priority}
+                    </span>
+                  </div>
+
+                  <h2 className="text-xl font-black text-slate-900">{ticket.subject}</h2>
+                  <p className="text-slate-600">{ticket.description}</p>
+
+                  <div className="flex flex-wrap gap-2 text-sm text-slate-500">
+                    <span>Reporter: {ticket.reporterName}</span>
+                    <span>•</span>
+                    <span>{ticket.requestTitle}</span>
+                    <span>•</span>
+                    <span>{ticket.campus}</span>
+                    <span>•</span>
+                    <span>Tech: {ticket.technicianId || "Not assigned"}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <Link
+                    to={`/admin/tickets/${ticket.id}`}
+                    className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 hover:bg-black text-white font-bold px-5 py-3"
+                  >
+                    <Eye size={18} />
+                    Open details
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
