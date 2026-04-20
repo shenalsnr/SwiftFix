@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Home from './components/home/home';
 import AuthPage from './pages/auth/AuthPage';
+import OAuthCallback from './pages/auth/OAuthCallback';
 import CreateBooking from './components/booking/CreateBooking';
 import MyBookings from './components/booking/MyBookings';
 import AdminDashboard from './components/booking/AdminDashboard';
@@ -10,8 +11,10 @@ import AdminHub from './components/AdminHub';
 import FacilitiesCatalogue from './components/FacilitiesCatalogue';
 import StudentCatalogue from './components/StudentCatalogue';
 import AdminFeedback from './components/AdminFeedback';
-import { UserCheck, ShieldCheck, GraduationCap, Building2, LogOut } from 'lucide-react';
+import UserProfile from './pages/student/StudentProfile';
+import { UserCheck, ShieldCheck, GraduationCap, Building2, LogOut, User } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 import AdminLogin from './pages/admin/AdminLogin';
 
@@ -20,7 +23,7 @@ const Navigation = () => {
     const { logout } = useAuth();
     const isAdminRoute = location.pathname.startsWith('/admin') && location.pathname !== '/admin-login';
     const isHome = location.pathname === '/';
-    const isAuth = location.pathname === '/auth' || location.pathname === '/admin-login';
+    const isAuth = location.pathname === '/auth' || location.pathname === '/admin-login' || location.pathname === '/oauth-callback';
 
     if (isHome || isAuth) return null;
 
@@ -41,6 +44,9 @@ const Navigation = () => {
                             </Link>
                             <Link to="/catalogue" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
                                 <Building2 size={18} /> Catalogue
+                            </Link>
+                            <Link to="/profile" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
+                                <User size={18} /> Profile
                             </Link>
                         </div>
                     )}
@@ -71,6 +77,8 @@ const AppContent = () => {
                     <Route path="/" element={<Home />} />
                     <Route path="/auth" element={<AuthPage />} />
                     <Route path="/admin-login" element={<AdminLogin />} />
+                    <Route path="/oauth-callback" element={<OAuthCallback />} />
+                    <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
                     <Route path="/my-bookings" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><MyBookings /></div>} />
                     <Route path="/catalogue" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><StudentCatalogue /></div>} />
                     <Route path="/student-catalogue" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><StudentCatalogue /></div>} />

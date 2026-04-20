@@ -46,12 +46,13 @@ axiosInstance.interceptors.response.use(
         console.error('Request Method:', error.config?.method);
         console.error('===================');
 
-        // If 401, user is unauthorized - redirect to login
+        // If 401, user is unauthorized - clear all auth data
         if (error.response?.status === 401) {
             localStorage.removeItem('token');
             localStorage.removeItem('role');
-            // Optional: redirect to /auth
-            // window.location.href = '/auth';
+            localStorage.removeItem('user');
+            // Redirect to login page
+            window.location.href = '/auth';
         }
 
         return Promise.reject(error);

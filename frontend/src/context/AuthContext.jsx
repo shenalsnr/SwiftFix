@@ -16,10 +16,15 @@ export const AuthProvider = ({ children }) => {
         const storedUser = localStorage.getItem('user');
         const storedRole = localStorage.getItem('role');
 
-        if (storedToken && storedUser && storedRole) {
+        // Only require a valid token — user/role are optional fallbacks
+        if (storedToken) {
             setToken(storedToken);
-            setUser(JSON.parse(storedUser));
-            setRole(storedRole);
+            setRole(storedRole || null);
+            try {
+                setUser(storedUser ? JSON.parse(storedUser) : null);
+            } catch {
+                setUser(null);
+            }
             setIsAuthenticated(true);
         }
         setLoading(false);
