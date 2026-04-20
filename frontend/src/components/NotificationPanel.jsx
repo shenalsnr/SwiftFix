@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Bell, CheckCheck, Trash2, X, CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
+import { Bell, CheckCheck, Trash2, X, CheckCircle, XCircle, AlertCircle, Info, Ticket, MessageCircle, Wrench, PlusCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const API_BASE = 'http://localhost:8080/api';
@@ -10,14 +10,42 @@ const TYPE_CONFIG = {
         color: '#22c55e',
         bg: '#f0fdf4',
         border: '#bbf7d0',
-        label: 'Approved',
+        label: 'Booking Approved',
     },
     BOOKING_REJECTED: {
         icon: XCircle,
         color: '#ef4444',
         bg: '#fef2f2',
         border: '#fecaca',
-        label: 'Rejected',
+        label: 'Booking Rejected',
+    },
+    TICKET_CREATED: {
+        icon: PlusCircle,
+        color: '#8b5cf6',
+        bg: '#f5f3ff',
+        border: '#ddd6fe',
+        label: 'Ticket Submitted',
+    },
+    TICKET_STATUS_UPDATE: {
+        icon: Ticket,
+        color: '#0ea5e9',
+        bg: '#f0f9ff',
+        border: '#bae6fd',
+        label: 'Ticket Updated',
+    },
+    TICKET_RESOLVED: {
+        icon: Wrench,
+        color: '#10b981',
+        bg: '#ecfdf5',
+        border: '#a7f3d0',
+        label: 'Ticket Resolved',
+    },
+    TICKET_COMMENT: {
+        icon: MessageCircle,
+        color: '#f59e0b',
+        bg: '#fffbeb',
+        border: '#fde68a',
+        label: 'New Reply',
     },
     SYSTEM_ALERT: {
         icon: AlertCircle,

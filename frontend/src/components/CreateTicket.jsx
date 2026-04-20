@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { createTicket } from "../services/ticketService";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   AlertTriangle,
   Send,
@@ -28,15 +29,22 @@ const CAMPUSES = [
 
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH"];
 
-const getCurrentUser = () => {
-  const savedUserId = localStorage.getItem("swiftfix_user_id") || "user1";
-  const savedName = localStorage.getItem("swiftfix_user_name") || "Student User";
-  return { id: savedUserId, name: savedName, role: "USER" };
-};
-
 export default function CreateTicket() {
   const navigate = useNavigate();
-  const currentUser = useMemo(() => getCurrentUser(), []);
+  const { user } = useAuth();
+
+  // Get the numeric userId the same way CreateBooking/MyBookings do
+  const currentUserId = (() => {
+    if (user?.userId != null) return String(user.userId);
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.sub;
+      }
+    } catch (e) { }
+    return 'unknown';
+  })();
 
   const [form, setForm] = useState({
     name: "",
@@ -96,7 +104,7 @@ export default function CreateTicket() {
         subject: form.subject.trim(),
         message: form.message.trim(),
         priority: form.priority,
-        userId: currentUser.id,
+        userId: currentUserId,
       };
 
       await createTicket(payload, files);
@@ -328,8 +336,8 @@ export default function CreateTicket() {
 
           <div className="rounded-3xl bg-white border border-slate-200 p-8 shadow-lg">
             <h3 className="text-lg font-black text-slate-900">Current user</h3>
-            <p className="text-slate-600 mt-2">User ID: {currentUser.id}</p>
-            <p className="text-slate-600">Role: {currentUser.role}</p>
+            <p className="text-slate-600 mt-2">User ID: {currentUserId}</p>
+            <p className="text-slate-600">Role: {user?.role || 'STUDENT'}</p>
           </div>
         </div>
       </div>

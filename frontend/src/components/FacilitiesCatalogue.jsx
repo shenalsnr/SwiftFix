@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getResources, createResource, updateResource, deleteResource } from '../services/resourceService';
-import { Search, Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, X, ChevronLeft } from 'lucide-react';
 import ResourceDashboard from './ResourceDashboard';
 
 const FacilitiesCatalogue = () => {
+    const navigate = useNavigate();
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [resources, setResources] = useState([]);
     const [filters, setFilters] = useState({ type: '', capacity: '', location: '' });
@@ -78,6 +80,13 @@ const FacilitiesCatalogue = () => {
 
     return (
         <div className="space-y-6">
+            <button
+                onClick={() => navigate('/admin')}
+                className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-indigo-600 transition-colors group"
+            >
+                <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                Back to Admin Hub
+            </button>
             <ResourceDashboard refreshTrigger={refreshTrigger} />
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <div className="flex justify-between items-center mb-6">

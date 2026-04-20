@@ -19,7 +19,7 @@ import AdminDashboard from "./components/booking/AdminDashboard";
 import ConformBooking from "./components/booking/ConformBooking";
 import AdminHub from "./components/AdminHub";
 
-// Ticket Module Imports
+// Ticket Module
 import CreateTicket from "./components/CreateTicket";
 import UserTickets from "./components/UserTickets";
 import AdminTickets from "./components/AdminTickets";
@@ -31,14 +31,8 @@ import StudentCatalogue from "./components/StudentCatalogue";
 import AdminFeedback from "./components/AdminFeedback";
 import UserProfile from "./pages/student/StudentProfile";
 import UserManagement from "./pages/admin/UserManagement";
+import NotificationPanel from "./components/NotificationPanel";
 
-import NotificationPanel from './components/NotificationPanel';
-
-
-
-import { UserCheck, ShieldCheck, GraduationCap, Building2, LogOut, User } from 'lucide-react';
-import { useAuth } from './context/AuthContext';
-import { ProtectedRoute } from './components/ProtectedRoute';
 import {
   GraduationCap,
   Building2,
@@ -61,39 +55,6 @@ const Navigation = () => {
   const isAuth =
     location.pathname === "/auth" || location.pathname === "/oauth-callback";
 
-    return (
-        <nav className="bg-black border-b border-gray-800 sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-16 items-center">
-                    <Link to="/" className="flex items-center gap-2">
-                        <div className="bg-blue-600 p-2 rounded-lg">
-                            <GraduationCap className="text-white" size={24} />
-                        </div>
-                        <span className="text-2xl font-black tracking-tighter text-white">Swift<span className="text-blue-500">Fix</span></span>
-                    </Link>
-                    {!isAdminRoute && (
-                        <div className="flex space-x-2">
-                            <Link to="/my-bookings" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
-                                <UserCheck size={18} /> My Bookings
-                            </Link>
-                            <Link to="/catalogue" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
-                                <Building2 size={18} /> Catalogue
-                            </Link>
-                            <Link to="/profile" className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
-                                <User size={18} /> Profile
-                            </Link>
-                        </div>
-                    )}
-                    <div className="flex items-center space-x-2 ml-4">
-                        <NotificationPanel />
-                        <button onClick={() => { 
-                            logout(); 
-                            window.location.href = '/'; 
-                        }} className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-red-400 hover:text-white hover:bg-red-500/20 transition-all">
-                            <LogOut size={18} /> Logout
-                        </button>
-                    </div>
-                </div>
   if (isHome || isAuth) return null;
 
   return (
@@ -153,7 +114,8 @@ const Navigation = () => {
             </div>
           )}
 
-          <div className="flex space-x-2 ml-4">
+          <div className="flex items-center space-x-2 ml-4">
+            <NotificationPanel />
             <button
               onClick={() => {
                 logout();

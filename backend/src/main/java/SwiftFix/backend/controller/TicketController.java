@@ -1,6 +1,7 @@
 package SwiftFix.backend.controller;
 
 import SwiftFix.backend.dto.ticket.*;
+import SwiftFix.backend.service.NotificationService;
 import SwiftFix.backend.service.TicketService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -17,14 +18,21 @@ import java.util.List;
 public class TicketController {
 
     private final TicketService ticketService;
+    private final NotificationService notificationService;
 
-    public TicketController(TicketService ticketService) {
+    public TicketController(TicketService ticketService, NotificationService notificationService) {
         this.ticketService = ticketService;
+        this.notificationService = notificationService;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TicketResponse> createJson(@Valid @RequestBody TicketCreateRequest request) {
         TicketResponse created = ticketService.create(request);
+        notificationService.createNotification(
+            created.getUserId(),
+            "Your ticket #" + created.getId() + " has been submitted successfully. We'll review it shortly.",
+            "TICKET_CREATED"
+        );
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -34,6 +42,11 @@ public class TicketController {
             @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
         TicketResponse created = ticketService.create(request, files);
+        notificationService.createNotification(
+            created.getUserId(),
+            "Your ticket #" + created.getId() + " has been submitted with attachments. We'll review it shortly.",
+            "TICKET_CREATED"
+        );
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -52,7 +65,6 @@ public class TicketController {
             @PathVariable Long id,
             @RequestParam(defaultValue = "false") boolean acknowledge
     ) {
-        // acknowledge kept only for compatibility with old frontend calls
         return ResponseEntity.ok(ticketService.findById(id));
     }
 
@@ -61,7 +73,14 @@ public class TicketController {
             @PathVariable Long id,
             @Valid @RequestBody TicketStatusUpdateRequest body
     ) {
-        return ResponseEntity.ok(ticketService.updateStatus(id, body));
+        TicketResponse updated = ticketService.updateStatus(id, body);
+        String statusLabel = formatStatus(updated.getStatus());
+        notificationService.createNotification(
+            updated.getUserId(),
+            "Your ticket #" + id + " status has been updated to: " + statusLabel + ".",
+            "TICKET_STATUS_UPDATE"
+        );
+        return ResponseEntity.ok(updated);
     }
 
     @PutMapping("/{id}/assign")
@@ -77,7 +96,13 @@ public class TicketController {
             @PathVariable Long id,
             @Valid @RequestBody TicketResolutionPatchRequest body
     ) {
-        return ResponseEntity.ok(ticketService.addResolutionNotes(id, body));
+        TicketResponse updated = ticketService.addResolutionNotes(id, body);
+        notificationService.createNotification(
+            updated.getUserId(),
+            "A resolution note has been added to your ticket #" + id + ". Please review it.",
+            "TICKET_RESOLVED"
+        );
+        return ResponseEntity.ok(updated);
     }
 
     @PostMapping("/{id}/comments")
@@ -85,7 +110,18 @@ public class TicketController {
             @PathVariable Long id,
             @Valid @RequestBody TicketCommentCreateRequest body
     ) {
-        return ResponseEntity.ok(ticketService.addComment(id, body));
+        TicketResponse updated = ticketService.addComment(id, body);
+        // Only notify the ticket owner if the commenter is not the owner themselves
+        boolean isAdminComment = "ADMIN".equalsIgnoreCase(body.getAuthorRole())
+                || "TECHNICIAN".equalsIgnoreCase(body.getAuthorRole());
+        if (isAdminComment) {
+            notificationService.createNotification(
+                updated.getUserId(),
+                "An admin replied to your ticket #" + id + ": \"" + truncate(body.getMessage(), 80) + "\"",
+                "TICKET_COMMENT"
+            );
+        }
+        return ResponseEntity.ok(updated);
     }
 
     @PutMapping("/{ticketId}/comments/{commentId}")
@@ -111,5 +147,24 @@ public class TicketController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         ticketService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    private String formatStatus(String status) {
+        if (status == null) return "Unknown";
+        return switch (status) {
+            case "OPEN"        -> "Open";
+            case "IN_PROGRESS" -> "In Progress";
+            case "RESOLVED"    -> "Resolved";
+            case "CLOSED"      -> "Closed";
+            case "REJECTED"    -> "Rejected";
+            default            -> status;
+        };
+    }
+
+    private String truncate(String text, int maxLen) {
+        if (text == null) return "";
+        return text.length() <= maxLen ? text : text.substring(0, maxLen) + "…";
     }
 }
