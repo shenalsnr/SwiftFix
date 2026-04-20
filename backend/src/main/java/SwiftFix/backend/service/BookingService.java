@@ -20,16 +20,28 @@ public class BookingService {
             throw new RuntimeException("Start time must be before end time");
         }
 
-        // Conflict Detection
-        List<Booking> overlaps = bookingRepository.findOverlappingBookings(
+        // Check for time slot conflicts - blocks exact same time, fully overlapping, and partially overlapping bookings
+        List<Booking> resourceOverlaps = bookingRepository.findOverlappingBookings(
                 booking.getResourceId(),
                 booking.getDate(),
                 booking.getStartTime(),
                 booking.getEndTime()
         );
 
-        if (!overlaps.isEmpty()) {
-            throw new RuntimeException("Conflict detected: This resource is already booked for the selected time slot.");
+        if (!resourceOverlaps.isEmpty()) {
+            throw new RuntimeException("Time slot already booked");
+        }
+
+        // Check if user already has another booking during this time range
+        List<Booking> userOverlaps = bookingRepository.findOverlappingUserBookings(
+                booking.getUserId(),
+                booking.getDate(),
+                booking.getStartTime(),
+                booking.getEndTime()
+        );
+
+        if (!userOverlaps.isEmpty()) {
+            throw new RuntimeException("Time slot already booked");
         }
 
         booking.setStatus(BookingStatus.PENDING);

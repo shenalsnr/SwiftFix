@@ -18,12 +18,20 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByUserId(String userId);
 
     @Query("SELECT b FROM Booking b WHERE LOWER(b.resourceId) = LOWER(:resourceId) AND b.date = :date " +
-           "AND b.status = SwiftFix.backend.model.BookingStatus.CONFIRMED " +
+           "AND b.status IN (SwiftFix.backend.model.BookingStatus.CONFIRMED, SwiftFix.backend.model.BookingStatus.PENDING) " +
            "AND (:startTime < b.endTime AND :endTime > b.startTime)")
     List<Booking> findOverlappingBookings(@Param("resourceId") String resourceId,
                                           @Param("date") LocalDate date,
                                           @Param("startTime") LocalTime startTime,
                                           @Param("endTime") LocalTime endTime);
+
+    @Query("SELECT b FROM Booking b WHERE b.userId = :userId AND b.date = :date " +
+           "AND b.status IN (SwiftFix.backend.model.BookingStatus.CONFIRMED, SwiftFix.backend.model.BookingStatus.PENDING) " +
+           "AND (:startTime < b.endTime AND :endTime > b.startTime)")
+    List<Booking> findOverlappingUserBookings(@Param("userId") String userId,
+                                              @Param("date") LocalDate date,
+                                              @Param("startTime") LocalTime startTime,
+                                              @Param("endTime") LocalTime endTime);
 
     /**
      * Auto-expires only admin-confirmed (CONFIRMED) bookings whose end time has passed.
