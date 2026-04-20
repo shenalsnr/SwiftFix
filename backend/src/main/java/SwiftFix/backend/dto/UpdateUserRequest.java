@@ -11,4 +11,5 @@ public class UpdateUserRequest {
     private String address;
     private String faculty; // Simple String
     private String profilePhotoPath;
+    private String role;
 }

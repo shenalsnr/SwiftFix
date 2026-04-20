@@ -12,6 +12,7 @@ import FacilitiesCatalogue from './components/FacilitiesCatalogue';
 import StudentCatalogue from './components/StudentCatalogue';
 import AdminFeedback from './components/AdminFeedback';
 import UserProfile from './pages/student/StudentProfile';
+import UserManagement from './pages/admin/UserManagement';
 import { UserCheck, ShieldCheck, GraduationCap, Building2, LogOut, User } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -84,6 +85,7 @@ const AppContent = () => {
                     <Route path="/admin/confirmed-bookings" element={<ProtectedRoute requiredRole="ADMIN"><ConformBooking /></ProtectedRoute>} />
                     <Route path="/admin/catalogue" element={<ProtectedRoute requiredRole="ADMIN"><FacilitiesCatalogue /></ProtectedRoute>} />
                     <Route path="/admin/feedback" element={<ProtectedRoute requiredRole="ADMIN"><AdminFeedback /></ProtectedRoute>} />
+                    <Route path="/admin/users" element={<ProtectedRoute requiredRole="ADMIN"><UserManagement /></ProtectedRoute>} />
                     <Route path="/book" element={<div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8"><CreateBooking /></div>} />
                 </Routes>
             </main>

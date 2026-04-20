@@ -79,6 +79,9 @@ public class UserService {
         if (request.getProfilePhotoPath() != null) {
             user.setProfilePhotoPath(request.getProfilePhotoPath());
         }
+        if (request.getRole() != null) {
+            user.setRole(request.getRole());
+        }
 
         User updatedUser = userRepository.save(user);
         return UserDTO.fromUser(updatedUser);
