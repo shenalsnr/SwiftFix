@@ -8,7 +8,8 @@ import {
     ArrowRight,
     ClipboardList,
     Building2,
-    MessageSquareMore
+    MessageSquareMore,
+    Users
 } from 'lucide-react';
 
 const AdminHub = () => {
@@ -52,6 +53,15 @@ const AdminHub = () => {
             color: "from-rose-500 to-pink-600",
             lightColor: "bg-rose-50",
             textColor: "text-rose-600"
+        },
+        {
+            title: "User Management",
+            description: "Manage student accounts and access rules.",
+            icon: <Users size={28} />,
+            path: "/admin/users",
+            color: "from-purple-500 to-fuchsia-600",
+            lightColor: "bg-purple-50",
+            textColor: "text-purple-600"
         }
     ];
 
